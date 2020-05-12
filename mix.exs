@@ -46,7 +46,15 @@ defmodule Phylax.MixProject do
       {:telemetry_poller, "~> 0.4"},
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
-      {:plug_cowboy, "~> 2.0"}
+      {:plug_cowboy, "~> 2.0", override: true},
+      {:nosedrum, "~> 0.2"},
+      {:nostrum, github: "Kraigie/nostrum", override: true},
+      {:websockex, "~> 0.4"},
+      {:libgraph, github: "tinfoil/libgraph"},
+      {:myxql, ">= 0.0.0"},
+      {:ex_esi, git: "git@github.com:lukasni/ex-esi.git"},
+      {:cowlib, "2.8.0", override: true},
+      {:number, "~> 1.0"}
     ]
   end
 

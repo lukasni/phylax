@@ -9,10 +9,17 @@ defmodule Phylax.Application do
     children = [
       # Start the Ecto repository
       Phylax.Repo,
+      ExEsi.Cache.MapStore,
+      Nosedrum.Storage.ETS,
+      Phylax.Discord.ConsumerSupervisor,
       # Start the Telemetry supervisor
       PhylaxWeb.Telemetry,
       # Start the PubSub system
       {Phoenix.PubSub, name: Phylax.PubSub},
+      {Registry, keys: :unique, name: Phylax.Killbot.WorkerRegistry},
+      Phylax.Killbot.WorkerSupervisor,
+      Phylax.Killbot.Manager,
+      Phylax.Zkillboard.Client,
       # Start the Endpoint (http/https)
       PhylaxWeb.Endpoint
       # Start a worker by calling: Phylax.Worker.start_link(arg)

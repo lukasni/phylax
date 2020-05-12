@@ -10,6 +10,15 @@ use Mix.Config
 config :phylax,
   ecto_repos: [Phylax.Repo]
 
+config :nosedrum,
+  prefix: System.get_env("BOT_PREFIX") || "."
+
+config :nostrum,
+  token: System.get_env("BOT_TOKEN"),
+  num_shards: :auto
+
+config :phylax, Phylax.Cache.ChainCache, expire_after: :timer.minutes(1)
+
 # Configures the endpoint
 config :phylax, PhylaxWeb.Endpoint,
   url: [host: "localhost"],
