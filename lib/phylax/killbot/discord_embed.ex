@@ -12,36 +12,34 @@ defmodule Phylax.Killbot.DiscordEmbed do
     neural: 0x808080
   }
 
-  def build(kill, opts) do
+  def build(%Kill{killmail: killmail} = kill, opts) do
     names = Keyword.get(opts, :names)
     location = Keyword.get(opts, :location)
     type = Keyword.get(opts, :type, :neutral)
+    victim = kill.killmail["victim"]
 
     %Nostrum.Struct.Embed{}
     |> put_type("rich")
-    |> put_title(kill_title(kill, names))
+    |> put_title(kill_title(kill, names, type))
     |> put_url(kill.url)
-    |> put_description(kill_description(kill, names))
-    |> put_field("Damage Taken", format_damage(kill.killmail["victim"]), true)
-    |> put_field("Pilots involved", to_string(length(kill.killmail["attackers"])), true)
-    |> put_field("Value", format_number(kill.killmail["zkb"]["totalValue"]), true)
-    |> put_field("Ship", format_ship(kill.killmail["victim"], names))
-    |> put_field("Most Damage", format_top_damage(kill, names))
+    |> put_field("Victim", print_party(victim, names))
+    |> put_field("Final Blow", "#{print_party(get_killer(kill), names)}")
+    |> put_field("Damage Taken", format_damage(victim), true)
+    |> put_field("Pilots involved", to_string(length(killmail["attackers"])), true)
+    |> put_field("Value", format_number(killmail["zkb"]["totalValue"]), true)
+    |> put_field("Attackers", format_top_damage(kill, names))
     |> put_field("System", format_location(location))
-    |> put_thumbnail("https://images.evetech.net/types/#{kill.killmail["victim"]["ship_type_id"]}/render?size=64")
-    |> put_timestamp(kill.killmail["killmail_time"])
+    |> put_thumbnail("https://images.evetech.net/types/#{victim["ship_type_id"]}/render?size=64")
+    |> put_timestamp(killmail["killmail_time"])
     |> put_color(@colors[type])
   end
 
-  defp kill_title(kill, names) do
-    "Kill: #{names[kill.killmail["victim"]["ship_type_id"]][:name]}"
-  end
+  defp kill_title(kill, names, type) do
+    case type do
+      :loss -> "Loss: #{names[kill.killmail["victim"]["ship_type_id"]][:name]}"
+      _ -> "Kill: #{names[kill.killmail["victim"]["ship_type_id"]][:name]}"
+    end
 
-  defp kill_description(kill, names) do
-    killer = get_killer(kill)
-    victim = kill.killmail["victim"]
-
-    "#{print_party(killer, names)} killed #{print_party(victim, names)}"
   end
 
   defp get_killer(kill) do
@@ -52,6 +50,12 @@ defmodule Phylax.Killbot.DiscordEmbed do
   defp get_most_damage(kill) do
     kill.killmail["attackers"]
     |> Enum.max_by(& &1["damage_done"])
+  end
+
+  defp get_most_damage(kill, amount) do
+    kill.killmail["attackers"]
+    |> Enum.sort_by(& &1["damage_done"], :desc)
+    |> Enum.take(amount)
   end
 
   defp party_name(party, names) do
@@ -76,14 +80,42 @@ defmodule Phylax.Killbot.DiscordEmbed do
     names[id]
   end
 
+  defp party_alliance(party, names) do
+    case party["alliance_id"] do
+      nil ->
+        nil
+
+      id ->
+        names[id]
+    end
+  end
+
   defp print_party(party, names) do
     name = party_name(party, names)
     affil = party_affiliation(party, names)
-    "[#{name.name}](#{zkb_link(name)}) ([#{affil.name}](#{zkb_link(affil)}))"
+
+    case party_alliance(party, names) do
+      nil ->
+        "#{format_ship(party, names)}: #{format_link(name)} (#{format_link(affil)})"
+      alliance ->
+        "#{format_ship(party, names)}: #{format_link(name)} (#{format_link(alliance)})"
+    end
+  end
+
+  defp format_link(name) do
+    format_link(name.name, name)
+  end
+
+  defp format_link(text, entity) do
+    "[#{text}](#{zkb_link(entity)})"
   end
 
   defp format_ship(%{"ship_type_id" => id}, names) do
-    "[#{names[id].name}](#{zkb_link(%{category: :ship, id: id})})"
+    format_link(names[id].name, %{category: :ship, id: id})
+  end
+
+  defp format_ship(_, _) do
+    "N/A"
   end
 
   defp format_damage(party) do
@@ -96,9 +128,10 @@ defmodule Phylax.Killbot.DiscordEmbed do
   end
 
   defp format_top_damage(kill, names) do
-    top = get_most_damage(kill)
+    top = get_most_damage(kill, 5)
 
-    "#{print_party(top, names)} (#{format_damage(top)})"
+    Enum.map(top, &"#{print_party(&1, names)} (#{format_damage(&1)})")
+    |> Enum.join("  \n")
   end
 
   defp format_location(%{jspace: nil} = location) do
@@ -110,11 +143,11 @@ defmodule Phylax.Killbot.DiscordEmbed do
   end
 
   defp print_system(system) do
-    "[#{system["name"]}](#{zkb_link(%{category: :system, id: system["system_id"]})})"
+    format_link(system["name"], %{category: :system, id: system["system_id"]})
   end
 
   defp print_region(region) do
-    "[#{region["name"]}](#{zkb_link(%{category: :region, id: region["region_id"]})})"
+    format_link(region["name"], %{category: :region, id: region["region_id"]})
   end
 
   defp zkb_link(%{category: :character, id: id}), do: "#{@zkb_url}/character/#{id}/"
