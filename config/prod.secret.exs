@@ -23,17 +23,27 @@ secret_key_base =
     You can generate one by calling: mix phx.gen.secret
     """
 
+lv_signing_salt =
+  System.get_env("LIVEVIEW_SIGNING_SALT") ||
+    raise """
+    environment variable LIVEVIEW_SIGNING_SALT is missing.
+    You can generate one by calling: mix phx.gen.secret 32
+    """
+
 config :phylax, PhylaxWeb.Endpoint,
   http: [
     port: String.to_integer(System.get_env("PORT") || "4000"),
     transport_options: [socket_opts: [:inet6]]
   ],
-  secret_key_base: secret_key_base
+  secret_key_base: secret_key_base,
+  live_view: [signing_salt: lv_signing_salt]
 
 # ## Using releases (Elixir v1.9+)
 #
 # If you are doing OTP releases, you need to instruct Phoenix
 # to start each relevant endpoint:
+#
+# Not setting this up yet for 0.1.1 since the webinterface is not implemented yet.
 #
 #     config :phylax, PhylaxWeb.Endpoint, server: true
 #
