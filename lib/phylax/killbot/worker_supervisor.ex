@@ -15,6 +15,7 @@ defmodule Phylax.Killbot.WorkerSupervisor do
   def start_child(opts) do
     DynamicSupervisor.start_child(
       __MODULE__,
-      %{id: Worker, start: {Worker, :start_link, [opts]}, restart: :transient})
+      %{id: Worker, start: {Worker, :start_link, [opts]}, restart: :transient}
+    )
   end
 end

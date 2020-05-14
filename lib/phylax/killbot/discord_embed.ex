@@ -39,7 +39,6 @@ defmodule Phylax.Killbot.DiscordEmbed do
       :loss -> "Loss: #{names[kill.killmail["victim"]["ship_type_id"]][:name]}"
       _ -> "Kill: #{names[kill.killmail["victim"]["ship_type_id"]][:name]}"
     end
-
   end
 
   defp get_killer(kill) do
@@ -60,8 +59,8 @@ defmodule Phylax.Killbot.DiscordEmbed do
 
   defp party_name(party, names) do
     id =
-      party["character_id"]
-      || party["ship_type_id"]
+      party["character_id"] ||
+        party["ship_type_id"]
 
     case names[id] do
       %{category: :inventory_type} = name ->
@@ -74,8 +73,8 @@ defmodule Phylax.Killbot.DiscordEmbed do
 
   defp party_affiliation(party, names) do
     id =
-      party["corporation_id"]
-      || party["faction_id"]
+      party["corporation_id"] ||
+        party["faction_id"]
 
     names[id]
   end
@@ -97,6 +96,7 @@ defmodule Phylax.Killbot.DiscordEmbed do
     case party_alliance(party, names) do
       nil ->
         "#{format_ship(party, names)}: #{format_link(name)} (#{format_link(affil)})"
+
       alliance ->
         "#{format_ship(party, names)}: #{format_link(name)} (#{format_link(alliance)})"
     end
@@ -135,7 +135,12 @@ defmodule Phylax.Killbot.DiscordEmbed do
   end
 
   defp format_location(%{jspace: nil} = location) do
-    "#{print_system(location.system)} (#{Number.Delimit.number_to_delimited(location.system["security_status"], separator: ".", precision: 2)}) / #{print_region(location.region)}"
+    "#{print_system(location.system)} (#{
+      Number.Delimit.number_to_delimited(location.system["security_status"],
+        separator: ".",
+        precision: 2
+      )
+    }) / #{print_region(location.region)}"
   end
 
   defp format_location(location) do

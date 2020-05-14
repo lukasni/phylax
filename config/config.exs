@@ -11,7 +11,10 @@ config :phylax,
   ecto_repos: [Phylax.Repo]
 
 config :ex_esi,
-  user_agent: "Phylax/0.1.0 (#{Mix.env() |> to_string() |> String.upcase()} #{to_string(node())}) Erlang/OTP #{:erlang.system_info(:otp_release)} [erts-#{:erlang.system_info(:version)}] catherinesolenne/tweetfleet"
+  user_agent:
+    "Phylax/0.1.0 (#{Mix.env() |> to_string() |> String.upcase()} #{to_string(node())}) Erlang/OTP #{
+      :erlang.system_info(:otp_release)
+    } [erts-#{:erlang.system_info(:version)}] catherinesolenne/tweetfleet"
 
 config :nosedrum,
   prefix: System.get_env("BOT_PREFIX") || "."

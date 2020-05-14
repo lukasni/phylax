@@ -125,8 +125,8 @@ defmodule Phylax.EsiHelpers do
       party["corporation_id"],
       party["alliance_id"],
       party["faction_id"],
-      party["ship_type_id"],
-      #party["weapon_type_id"]
+      party["ship_type_id"]
+      # party["weapon_type_id"]
     ]
     |> Enum.reject(&is_nil/1)
   end

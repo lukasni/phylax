@@ -22,7 +22,7 @@ defmodule Phylax.Killbot.Worker do
   # Server Callbacks
 
   def init(opts) do
-    Logger.debug("Starting killbot worker with options #{inspect opts}")
+    Logger.debug("Starting killbot worker with options #{inspect(opts)}")
     Phylax.subscribe(:killboard)
     {:ok, %{channel: opts[:channel], entities: MapSet.new()}, {:continue, :load_entities}}
   end
@@ -33,7 +33,7 @@ defmodule Phylax.Killbot.Worker do
       |> Enum.map(& &1.entity_id)
       |> MapSet.new()
 
-    Logger.debug("Adding entities #{inspect entities} for channel #{state.channel}")
+    Logger.debug("Adding entities #{inspect(entities)} for channel #{state.channel}")
 
     {:noreply, %{state | entities: entities}}
   end

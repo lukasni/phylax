@@ -50,7 +50,7 @@ defmodule Phylax.Discord.Commands.Killbot.Subscribed do
 
   defp format_entity_group({group, entities}) do
     """
-    **#{group |> to_string |> String.capitalize}s**
+    **#{group |> to_string |> String.capitalize()}s**
     #{Enum.map(entities, & &1.entity_name) |> Enum.join(", ")}
     """
   end

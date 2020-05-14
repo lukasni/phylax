@@ -22,7 +22,6 @@ defmodule Phylax.Killbot.Manager do
     GenServer.call(@name, {:unsubscribe_all, channel_id})
   end
 
-
   # Server Callbacks
 
   def init(initial_state) do
