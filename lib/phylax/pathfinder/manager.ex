@@ -23,8 +23,8 @@ defmodule Phylax.Pathfinder.Manager do
     map_ids = map_ids(chains)
     chain_ids = chain_ids(chains)
 
-    start_map_workers(map_ids)
-    start_chain_workers(chain_ids)
+    populate_maps(map_ids)
+    populate_chains(chain_ids)
 
     {:noreply, %{maps: map_ids, chains: chain_ids}}
   end
@@ -41,17 +41,17 @@ defmodule Phylax.Pathfinder.Manager do
     |> Enum.uniq()
   end
 
-  defp start_map_workers(map_ids) do
+  defp populate_maps(map_ids) do
     for map_id <- map_ids do
-      Logger.debug("Starting Pathfinder.Map.Worker for map #{inspect(map_id)}")
-      PF.Map.WorkerSupervisor.start_child(map_id: map_id)
+      Logger.debug("Populating map #{inspect(map_id)}")
+      PF.Map.Worker.start_tracking_map(map_id)
     end
   end
 
-  defp start_chain_workers(chain_ids) do
+  defp populate_chains(chain_ids) do
     for {map_id, root_system_id} <- chain_ids do
-      Logger.debug("Starting Pathfinder.Chain.Worker for chain {#{map_id}, #{root_system_id}}")
-      PF.Chain.WorkerSupervisor.start_child(map_id: map_id, root_system_id: root_system_id)
+      Logger.debug("Populating Chain {#{map_id}, #{root_system_id}}")
+      PF.Chain.Worker.start_tracking_chain({map_id, root_system_id})
     end
   end
 end

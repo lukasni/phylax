@@ -10,8 +10,8 @@ defmodule Phylax.Pathfinder.Supervisor do
     children = [
       Phylax.Pathfinder.Repo,
       {Registry, keys: :unique, name: Phylax.Pathfinder.WorkerRegistry},
-      Phylax.Pathfinder.Map.WorkerSupervisor,
-      Phylax.Pathfinder.Chain.WorkerSupervisor,
+      Phylax.Pathfinder.Map.Worker,
+      Phylax.Pathfinder.Chain.Worker,
       Phylax.Pathfinder.Manager,
     ]
 

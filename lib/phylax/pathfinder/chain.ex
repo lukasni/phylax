@@ -3,6 +3,7 @@ defmodule Phylax.Pathfinder.Chain do
 
   def connected_systems(%Graph{} = map, root_system_id) do
     Graph.reachable(map, [root_system_id])
+    |> Enum.reject(&is_nil/1)
     |> MapSet.new()
   end
 
