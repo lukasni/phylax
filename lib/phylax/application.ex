@@ -10,15 +10,20 @@ defmodule Phylax.Application do
       # Start the Ecto repository
       Phylax.Repo,
       ExEsi.Cache.MapStore,
+      # Start Discord Systems
       Nosedrum.Storage.ETS,
       Phylax.Discord.ConsumerSupervisor,
       # Start the Telemetry supervisor
       PhylaxWeb.Telemetry,
       # Start the PubSub system
       {Phoenix.PubSub, name: Phylax.PubSub},
+      # Start Killbot Systems
       {Registry, keys: :unique, name: Phylax.Killbot.WorkerRegistry},
       Phylax.Killbot.WorkerSupervisor,
       Phylax.Killbot.Manager,
+      # Start Pathfinder Systems
+      Phylax.Pathfinder.Supervisor,
+      # Start Zkillboard websocket
       Phylax.Zkillboard.Client,
       # Start the Endpoint (http/https)
       PhylaxWeb.Endpoint

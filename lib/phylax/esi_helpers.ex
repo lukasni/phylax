@@ -66,6 +66,13 @@ defmodule Phylax.EsiHelpers do
     |> do_search()
   end
 
+  def search({:system, term}) do
+    term
+    |> API.Search.public([:solar_system], true)
+    |> API.put_after_parse(&Map.get(&1, "solar_system"))
+    |> do_search()
+  end
+
   defp do_search(op) do
     case ExEsi.request(op) do
       {:ok, [id], _} ->
