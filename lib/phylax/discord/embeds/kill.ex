@@ -1,4 +1,4 @@
-defmodule Phylax.Killbot.DiscordEmbed do
+defmodule Phylax.Discord.Embeds.Kill do
   @moduledoc false
 
   @zkb_url "https://zkillboard.com"

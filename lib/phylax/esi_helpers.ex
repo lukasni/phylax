@@ -24,6 +24,20 @@ defmodule Phylax.EsiHelpers do
     |> remap_names()
   end
 
+  def names(ids) when is_list(ids) do
+    ids
+    |> API.Universe.names()
+    |> retry_404()
+    |> remap_names()
+  end
+
+  def get_name(id) do
+    [id]
+    |> API.Universe.names()
+    |> retry_404()
+    |> pluck_name(id)
+  end
+
   def location(%Kill{} = kill) do
     {:ok, system, _} =
       kill.system_id
@@ -101,6 +115,11 @@ defmodule Phylax.EsiHelpers do
         id: r["id"]
       })
     end)
+  end
+
+  defp pluck_name({:ok, names_result, _meta}, id) do
+    names_result
+    |> Enum.find_value(fn x -> if x["id"] == id, do: x["name"], else: false end)
   end
 
   defp retry_404(op) do

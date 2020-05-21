@@ -25,6 +25,7 @@ defmodule Phylax.Pathfinder.Manager do
 
     populate_maps(map_ids)
     populate_chains(chain_ids)
+    start_chain_killbots(chains)
 
     {:noreply, %{maps: map_ids, chains: chain_ids}}
   end
@@ -52,6 +53,12 @@ defmodule Phylax.Pathfinder.Manager do
     for {map_id, root_system_id} <- chain_ids do
       Logger.debug("Populating Chain {#{map_id}, #{root_system_id}}")
       PF.Chain.Worker.start_tracking_chain({map_id, root_system_id})
+    end
+  end
+
+  defp start_chain_killbots(chains) do
+    for chain <- chains do
+      PF.Chain.Killbot.start_link(channel: chain.channel_id)
     end
   end
 end

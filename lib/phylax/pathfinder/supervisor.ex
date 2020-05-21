@@ -12,7 +12,7 @@ defmodule Phylax.Pathfinder.Supervisor do
       {Registry, keys: :unique, name: Phylax.Pathfinder.WorkerRegistry},
       Phylax.Pathfinder.Map.Worker,
       Phylax.Pathfinder.Chain.Worker,
-      Phylax.Pathfinder.Manager,
+      Phylax.Pathfinder.Manager
     ]
 
     Supervisor.init(children, strategy: :rest_for_one)

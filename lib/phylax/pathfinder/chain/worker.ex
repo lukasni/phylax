@@ -33,13 +33,20 @@ defmodule Phylax.Pathfinder.Chain.Worker do
   def handle_call({:add_chain, {map_id, root_system_id}}, _from, state) do
     map = Pathfinder.Map.Worker.get_map(map_id)
     connections = Pathfinder.Chain.connected_systems(map, root_system_id)
-    #new_state = put_in(state, [map_id, root_system_id], connections)
-    new_state = Map.update(state, map_id, %{root_system_id => connections}, &Map.put(&1, root_system_id, connections))
+    # new_state = put_in(state, [map_id, root_system_id], connections)
+    new_state =
+      Map.update(
+        state,
+        map_id,
+        %{root_system_id => connections},
+        &Map.put(&1, root_system_id, connections)
+      )
 
     {:reply, connections, new_state}
   end
 
-  def handle_info({:map_changed, %{map_id: map_id} = map}, state) when is_map_key(state, map_id) do
+  def handle_info({:map_changed, %{map_id: map_id} = map}, state)
+      when is_map_key(state, map_id) do
     chains = Map.get(state, map_id)
 
     new_chains =

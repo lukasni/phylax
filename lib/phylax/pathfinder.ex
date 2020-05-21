@@ -5,6 +5,11 @@ defmodule Phylax.Pathfinder do
   import Ecto.Query
   alias Phylax.EsiHelpers, as: ESI
 
+  @excluded_systems [
+    # Jita
+    30000142
+  ]
+
   @doc """
   Get all watched chains from the config cache
   """
@@ -21,6 +26,7 @@ defmodule Phylax.Pathfinder do
   def get_watched_chains(channel_id) do
     from(c in WatchedChain, where: c.channel_id == ^channel_id)
     |> Repo.all()
+    |> Repo.preload(:excluded_entities)
   end
 
   @spec add_watched_chain(integer(), String.t(), String.t()) ::
@@ -61,6 +67,17 @@ defmodule Phylax.Pathfinder do
   def delete_watched_chains(channel_id) do
     from(c in WatchedChain, where: c.channel_id == ^channel_id)
     |> Repo.delete()
+  end
+
+  def kill_in_chain?(kill, chain) do
+    systems = Phylax.Pathfinder.Chain.Worker.get_connections(chain)
+
+    (kill.system_id in systems) and (kill.system_id not in @excluded_systems)
+  end
+
+  def excluded?(kill, excludes) do
+    (MapSet.disjoint?(kill.affiliated.killers, excludes) &&
+       MapSet.disjoint?(kill.affiliated.victim, excludes)) == false
   end
 
   def broadcast({key, data}) do

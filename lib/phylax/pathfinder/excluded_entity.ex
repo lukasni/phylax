@@ -14,7 +14,7 @@ defmodule Phylax.Pathfinder.ExcludedEntity do
   @doc false
   def changeset(excluded_entity, attrs) do
     excluded_entity
-    |> cast(attrs, [:entity_id, :entity_name, :entity_type])
-    |> validate_required([:entity_id, :entity_name, :entity_type])
+    |> cast(attrs, [:entity_id, :entity_name, :entity_type, :watched_chain_id])
+    |> validate_required([:entity_id, :entity_name, :entity_type, :watched_chain_id])
   end
 end
