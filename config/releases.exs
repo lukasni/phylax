@@ -24,7 +24,7 @@ pathfinder_database_url =
     """
 
 config :phylax, Phylax.Pathfinder.Repo,
-  ssl: true,
+  # ssl: true,
   url: database_url,
   pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")
 
@@ -58,6 +58,12 @@ config :phylax, PhylaxWeb.Endpoint,
   ],
   secret_key_base: secret_key_base,
   live_view: [signing_salt: lv_signing_salt]
+
+config :ex_esi,
+  user_agent:
+    "Phylax/0.1.1 (#{Mix.env() |> to_string() |> String.upcase()} #{to_string(node())}) Erlang/OTP #{
+      :erlang.system_info(:otp_release)
+    } [erts-#{:erlang.system_info(:version)}] catherinesolenne/tweetfleet"
 
 # ## Using releases (Elixir v1.9+)
 #
