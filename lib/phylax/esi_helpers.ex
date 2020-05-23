@@ -40,7 +40,6 @@ defmodule Phylax.EsiHelpers do
   end
 
   def ids(names) do
-    IO.inspect(names)
     {:ok, result, _meta} =
       names
       |> API.Universe.ids()
