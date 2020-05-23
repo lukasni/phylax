@@ -1,5 +1,15 @@
 defmodule Phylax.Pathfinder.Map.Worker do
-  @moduledoc false
+  @moduledoc """
+  Pathfinder Map Server. Single process for all maps.
+
+  Maintains the graphs for all active connections per tracked map.
+
+  State:
+  ```elixir
+  %{
+    integer_map_id => %Graph{}
+  }
+  """
 
   use GenServer
   require Logger
@@ -20,6 +30,10 @@ defmodule Phylax.Pathfinder.Map.Worker do
     GenServer.call(@name, {:add_map, map_id})
   end
 
+  def stop_tracking_map(map_id) do
+    GenServer.call(@name, {:remove_map, map_id})
+  end
+
   def init(opts) do
     schedule_refresh()
     Logger.debug("Starting map worker with options #{inspect(opts)}")
@@ -33,6 +47,10 @@ defmodule Phylax.Pathfinder.Map.Worker do
   def handle_call({:add_map, map_id}, _from, state) do
     new_state = update_map(state, map_id)
     {:reply, new_state[map_id], new_state}
+  end
+
+  def handle_call({:remove_map, map_id}, _from, state) do
+    {:reply, :ok, Map.delete(state, map_id)}
   end
 
   def handle_info(:refresh, state) do

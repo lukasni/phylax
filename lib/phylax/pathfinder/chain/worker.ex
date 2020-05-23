@@ -19,6 +19,10 @@ defmodule Phylax.Pathfinder.Chain.Worker do
     GenServer.call(@name, {:add_chain, chain_id})
   end
 
+  def stop_tracking_chain(chain_id) do
+    GenServer.call(@name, {:remove_chain, chain_id})
+  end
+
   def init(opts) do
     Logger.debug("Starting map worker with options #{inspect(opts)}")
     Phylax.subscribe(:pathfinder)
@@ -43,6 +47,21 @@ defmodule Phylax.Pathfinder.Chain.Worker do
       )
 
     {:reply, connections, new_state}
+  end
+
+  def handle_call({:remove_chain, {map_id, root_system_id}}, _from, state) do
+    chains = Map.get(state, map_id, %{}) |> Map.keys()
+
+    case chains do
+      [^root_system_id] ->
+        {:reply, :ok, Map.delete(state, map_id)}
+
+      [] ->
+        {:reply, :ok, Map.delete(state, map_id)}
+
+      _ ->
+        {:reply, :ok, Map.update!(state, map_id, &Map.delete(&1, root_system_id))}
+    end
   end
 
   def handle_info({:map_changed, %{map_id: map_id} = map}, state)

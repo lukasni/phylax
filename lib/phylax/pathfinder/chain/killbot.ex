@@ -8,7 +8,17 @@ defmodule Phylax.Pathfinder.Chain.Killbot do
   alias Phylax.Pathfinder, as: PF
 
   def start_link(opts) do
+    Logger.debug("Starting #{__MODULE__} worker with options #{inspect opts}")
     GenServer.start_link(__MODULE__, opts, name: via_tuple(opts[:channel]))
+  end
+
+  def subscribe(chain) do
+    excludes =
+      chain.excluded_entities
+      |> Enum.map(& &1.entity_id)
+      |> MapSet.new()
+
+    subscribe(chain.channel_id, {chain.map_id, chain.root_system_id}, excludes)
   end
 
   def subscribe(channel_id, chain_id, excludes) do
@@ -28,6 +38,20 @@ defmodule Phylax.Pathfinder.Chain.Killbot do
     Phylax.subscribe(:killboard)
 
     {:ok, %{channel: opts[:channel], chains: %{}}, {:continue, :load_chains}}
+  end
+
+  def handle_call({:subscribe, chain_id, excludes}, _from, state) do
+    state =
+      %{state | chains: Map.put(state.chains, chain_id, excludes)}
+
+    {:reply, :ok, state}
+  end
+
+  def handle_call({:unsubscribe, chain_id}, _from, state) do
+    state =
+      %{state | chains: Map.delete(state.chains, chain_id)}
+
+    {:reply, :ok, state}
   end
 
   def handle_continue(:load_chains, state) do

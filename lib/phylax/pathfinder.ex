@@ -15,7 +15,7 @@ defmodule Phylax.Pathfinder do
   """
   @spec get_watched_chains :: [Chain.t()]
   def get_watched_chains() do
-    WatchedChain
+    from([c, e] in chains_with_excludes(), preload: [excluded_entities: e])
     |> Repo.all()
   end
 
@@ -24,23 +24,23 @@ defmodule Phylax.Pathfinder do
   """
   @spec get_watched_chains(integer()) :: [Chain.t()]
   def get_watched_chains(channel_id) do
-    from(c in WatchedChain, where: c.channel_id == ^channel_id)
+    from([c, e] in chains_with_excludes(), where: c.channel_id == ^channel_id, preload: [excluded_entities: e])
     |> Repo.all()
-    |> Repo.preload(:excluded_entities)
   end
 
-  @spec add_watched_chain(integer(), String.t(), String.t()) ::
-          {:ok, any} | {:error, :map_not_found | :system_not_found | :unhandled}
-  def add_watched_chain(channel_id, map_name, root_system_name) do
-    with {:ok, root_id} <- ESI.search({:system, root_system_name}),
-         map_id when is_integer(map_id) <- Phylax.Pathfinder.Map.get_map_id(map_name) do
-      %WatchedChain{}
-      |> WatchedChain.changeset(%{
-        map_id: map_id,
-        root_system_id: root_id,
-        channel_id: channel_id
-      })
-      |> Repo.insert()
+  defp chains_with_excludes do
+    from(c in WatchedChain, left_join: e in assoc(c, :excluded_entities))
+  end
+
+  def add_watched_chain(channel_id, opts) do
+    excludes = Enum.group_by(opts, &elem(&1, 0), &elem(&1, 1)) |> Map.get(:exclude)
+
+    with {:ok, root_id} <- ESI.search({:system, opts[:root]}),
+         map_id when is_integer(map_id) <- Phylax.Pathfinder.Map.get_map_id(opts[:map]),
+         excludes = ESI.ids(excludes),
+         {:ok, inserted} <- create_chain(map_id, root_id, channel_id, excludes) do
+      broadcast({:chain_added, inserted})
+      {:ok, inserted}
     else
       {:error, :not_found} -> {:error, :system_not_found}
       {_, nil} -> {:error, :map_not_found}
@@ -48,15 +48,23 @@ defmodule Phylax.Pathfinder do
     end
   end
 
+  defp create_chain(map_id, root_id, channel_id, excludes \\ []) do
+    %WatchedChain{}
+    |> WatchedChain.changeset(%{
+      map_id: map_id,
+      root_system_id: root_id,
+      channel_id: channel_id,
+      excluded_entities: excludes
+    })
+    |> Repo.insert()
+  end
+
   def delete_watched_chain(channel_id, map_name, root_system_name) do
     with {:ok, root_id} <- ESI.search({:system, root_system_name}),
-         map_id when is_integer(map_id) <- Phylax.Pathfinder.Map.get_map_id(map_name) do
-      from(c in WatchedChain,
-        where: c.map_id == ^map_id,
-        where: c.root_system_id == ^root_id,
-        where: c.channel_id == ^channel_id
-      )
-      |> Repo.delete()
+         map_id when is_integer(map_id) <- Phylax.Pathfinder.Map.get_map_id(map_name),
+         {count, nil} <- delete_chain(map_id, root_id, channel_id) do
+      broadcast({:chain_deleted, %{channel_id: channel_id, map_id: map_id, root_system_id: root_id}})
+      {:ok, count}
     else
       {:error, :not_found} -> {:error, :system_not_found}
       nil -> {:error, :map_not_found}
@@ -64,13 +72,17 @@ defmodule Phylax.Pathfinder do
     end
   end
 
-  def delete_watched_chains(channel_id) do
-    from(c in WatchedChain, where: c.channel_id == ^channel_id)
-    |> Repo.delete()
+  defp delete_chain(map_id, root_system_id, channel_id) do
+    from(c in WatchedChain,
+      where: c.map_id == ^map_id,
+      where: c.root_system_id == ^root_system_id,
+      where: c.channel_id == ^channel_id
+    )
+    |> Repo.delete_all()
   end
 
   def kill_in_chain?(kill, chain) do
-    systems = Phylax.Pathfinder.Chain.Worker.get_connections(chain)
+    systems = Phylax.Pathfinder.Chain.Worker.get_connections(chain) || []
 
     (kill.system_id in systems) and (kill.system_id not in @excluded_systems)
   end

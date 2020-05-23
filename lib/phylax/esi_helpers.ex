@@ -24,11 +24,31 @@ defmodule Phylax.EsiHelpers do
     |> remap_names()
   end
 
+  def names([]) do
+    %{}
+  end
+
   def names(ids) when is_list(ids) do
     ids
     |> API.Universe.names()
     |> retry_404()
     |> remap_names()
+  end
+
+  def ids(names) when names == [] or is_nil(names) do
+    []
+  end
+
+  def ids(names) do
+    IO.inspect(names)
+    {:ok, result, _meta} =
+      names
+      |> API.Universe.ids()
+      |> ExEsi.request
+
+    for {type, entries} <- result, entry <- entries do
+      %{entity_id: entry["id"], entity_name: entry["name"], entity_type: singular_result_type(type)}
+    end
   end
 
   def get_name(id) do
@@ -162,4 +182,11 @@ defmodule Phylax.EsiHelpers do
 
     Map.get(@jspace_regions, prefix)
   end
+
+  defp singular_result_type(plural)
+  defp singular_result_type("alliances"), do: "alliance"
+  defp singular_result_type("corporations"), do: "corporation"
+  defp singular_result_type("characters"), do: "character"
+  defp singular_result_type("factions"), do: "faction"
+  defp singular_result_type(_), do: "other"
 end

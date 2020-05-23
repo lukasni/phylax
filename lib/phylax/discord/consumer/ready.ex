@@ -6,6 +6,11 @@ defmodule Phylax.Discord.Consumer.Ready do
   @commands %{
     "help" => Commands.Help,
     "ping" => Commands.Ping,
+    "pathfinder" => %{
+      "subscribe" => Commands.Pathfinder.Subscribe,
+      "subscribed" => Commands.Pathfinder.Subscribed,
+      "unsubscribe" => Commands.Pathfinder.Unsubscribe
+    },
     "killboard" => %{
       "subscribe" => Commands.Killbot.Subscribe,
       "subscribed" => Commands.Killbot.Subscribed,
@@ -15,6 +20,7 @@ defmodule Phylax.Discord.Consumer.Ready do
 
   @aliases %{
     "man" => Map.fetch!(@commands, "help"),
+    "pf" => Map.fetch!(@commands, "pathfinder"),
     "kb" => Map.fetch!(@commands, "killboard")
   }
 

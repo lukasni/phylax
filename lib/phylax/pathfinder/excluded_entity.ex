@@ -6,7 +6,8 @@ defmodule Phylax.Pathfinder.ExcludedEntity do
     field :entity_id, :integer
     field :entity_name, :string
     field :entity_type, :string
-    field :watched_chain_id, :id
+
+    belongs_to :watched_chain, Phylax.Pathfinder.WatchedChain
 
     timestamps()
   end
@@ -15,6 +16,6 @@ defmodule Phylax.Pathfinder.ExcludedEntity do
   def changeset(excluded_entity, attrs) do
     excluded_entity
     |> cast(attrs, [:entity_id, :entity_name, :entity_type, :watched_chain_id])
-    |> validate_required([:entity_id, :entity_name, :entity_type, :watched_chain_id])
+    |> validate_required([:entity_id, :entity_name, :entity_type])
   end
 end

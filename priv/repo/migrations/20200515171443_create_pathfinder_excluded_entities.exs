@@ -6,7 +6,7 @@ defmodule Phylax.Repo.Migrations.CreatePathfinderExcludedEntities do
       add :entity_id, :integer
       add :entity_name, :string
       add :entity_type, :string
-      add :watched_chain_id, references(:pathfinder_watched_chains, on_delete: :nothing)
+      add :watched_chain_id, references(:pathfinder_watched_chains, on_delete: :delete_all)
 
       timestamps()
     end
