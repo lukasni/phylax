@@ -16,6 +16,27 @@ config :phylax, Phylax.Repo,
   url: database_url,
   pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")
 
+pathfinder_database_url =
+  System.get_env("PATHFINDER_DATABASE_URL") ||
+    raise """
+    environment variable PATHFINDER_DATABASE_URL is missing.
+    For example: ecto://USER:PASS@HOST/DATABASE
+    """
+
+config :phylax, Phylax.Pathfinder.Repo,
+  ssl: true,
+  url: database_url,
+  pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")
+
+bot_token =
+  System.get_env("BOT_TOKEN") ||
+    raise """
+    environment variable BOT_TOKEN is missing.
+    """
+
+config :nostrum,
+    token: bot_token
+
 secret_key_base =
   System.get_env("SECRET_KEY_BASE") ||
     raise """
