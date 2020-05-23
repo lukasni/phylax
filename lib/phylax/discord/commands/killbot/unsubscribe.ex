@@ -13,7 +13,7 @@ defmodule Phylax.Discord.Commands.Killbot.Unsubscribe do
   alias Phylax.Killbot.Entry
 
   @impl true
-  def usage, do: ["kb unsubscribe [name:string]"]
+  def usage, do: ["killboard unsubscribe <name:string>"]
 
   @impl true
   def description() do

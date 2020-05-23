@@ -11,12 +11,12 @@ defmodule Phylax.Discord.Commands.Killbot.Subscribed do
   alias Phylax.Killbot, as: KB
 
   @impl true
-  def usage, do: ["kb subscribed"]
+  def usage, do: ["killboard subscribed"]
 
   @impl true
   def description() do
     """
-    Show killbot entities currently tracked in this channel.
+    Show killboard entities currently tracked in this channel.
     """
   end
 
