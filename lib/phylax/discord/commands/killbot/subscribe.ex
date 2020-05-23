@@ -15,12 +15,24 @@ defmodule Phylax.Discord.Commands.Killbot.Subscribe do
   alias Phylax.EsiHelpers, as: ESI
 
   @impl true
-  def usage, do: ["killbot subscribe [options"]
+  def usage, do: ["killboard subscribe <options...>"]
 
   @impl true
   def description() do
     """
-    Subscribe to receive kills from corps / alliances
+    Subscribe to receive kill feed.
+
+    This command requires one or more of following options:
+
+    ```
+    -c, --corporation <name:string>
+        Track kills from this corporation in the channel.
+        This option can be specified multiple times.
+
+    -a, --alliance <name:string>
+        Track kills from this alliance in the channel.
+        This option can be specified multiple times.
+    ```
     """
   end
 
@@ -28,14 +40,27 @@ defmodule Phylax.Discord.Commands.Killbot.Subscribe do
   def predicates, do: [&Predicates.guild_only/1, Predicates.has_permission(:manage_roles)]
 
   @impl true
-  def command(msg, opts) do
-    {entities, _rest, _invalid} =
-      OptionParser.parse(opts,
-        strict: [corporation: :keep, alliance: :keep],
-        aliases: [c: :corporation, a: :alliance]
-      )
+  def parse_args(args) do
+    OptionParser.parse(
+      args,
+      strict: [
+        # --corporation | -c
+        #   start tracking kills for this corporation in the channel, can be specified multiple times
+        corporation: [:string, :keep],
+        # --alliance | -a
+        #   start tracking kills for this alliance in the channel, can be specified multiple times
+        alliance: [:string, :keep]
+      ],
+      aliases: [
+        c: :corporation,
+        a: :alliance
+      ]
+    )
+  end
 
-    results = search_and_add(entities, msg.channel_id)
+  @impl true
+  def command(msg, {options, [], []}) when options != [] do
+    results = search_and_add(options, msg.channel_id)
 
     response =
       case results.error do
@@ -45,6 +70,12 @@ defmodule Phylax.Discord.Commands.Killbot.Subscribe do
         errors ->
           "Some entites could not be added:\n" <> format_errors(errors)
       end
+
+    Api.create_message(msg.channel_id, response)
+  end
+
+  def command(msg, _opts) do
+    response = Util.usage(__MODULE__)
 
     Api.create_message(msg.channel_id, response)
   end
@@ -90,7 +121,7 @@ defmodule Phylax.Discord.Commands.Killbot.Subscribe do
     do: "Already watching this entity in this channel"
 
   defp pretty_print_search_error(error) do
-    Logger.warn("KILLBOT ADD: #{inspect(error)}")
+    Logger.warn("#{__MODULE__}: #{inspect(error)}")
     "Unexpected error"
   end
 end

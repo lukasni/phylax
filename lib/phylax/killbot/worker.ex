@@ -22,7 +22,7 @@ defmodule Phylax.Killbot.Worker do
   # Server Callbacks
 
   def init(opts) do
-    Logger.debug("Starting killbot worker with options #{inspect opts}")
+    Logger.debug("Starting killbot worker with options #{inspect(opts)}")
     Phylax.subscribe(:killboard)
     {:ok, %{channel: opts[:channel], entities: MapSet.new()}, {:continue, :load_entities}}
   end
@@ -33,7 +33,7 @@ defmodule Phylax.Killbot.Worker do
       |> Enum.map(& &1.entity_id)
       |> MapSet.new()
 
-    Logger.debug("Adding entities #{inspect entities} for channel #{state.channel}")
+    Logger.debug("Adding entities #{inspect(entities)} for channel #{state.channel}")
 
     {:noreply, %{state | entities: entities}}
   end
@@ -52,28 +52,16 @@ defmodule Phylax.Killbot.Worker do
   def handle_info({:kill, kill}, state) do
     cond do
       MapSet.disjoint?(state.entities, kill.affiliated.killers) == false ->
-        Task.start(fn -> post_kill(state.channel, kill, :kill) end)
+        Task.start(fn -> Phylax.Discord.post_kill(state.channel, kill, :kill) end)
 
       MapSet.disjoint?(state.entities, kill.affiliated.victim) == false ->
-        Task.start(fn -> post_kill(state.channel, kill, :loss) end)
+        Task.start(fn -> Phylax.Discord.post_kill(state.channel, kill, :loss) end)
 
       true ->
         :noop
     end
 
     {:noreply, state}
-  end
-
-  defp post_kill(channel, kill, type) do
-    embed =
-      kill
-      |> Phylax.Killbot.DiscordEmbed.build(
-        location: Phylax.EsiHelpers.location(kill),
-        names: Phylax.EsiHelpers.names(kill),
-        type: type
-      )
-
-    Nostrum.Api.create_message(channel, embed: embed)
   end
 
   defp via_tuple(channel_id) do

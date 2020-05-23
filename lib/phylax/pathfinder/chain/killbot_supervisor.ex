@@ -1,8 +1,8 @@
-defmodule Phylax.Killbot.WorkerSupervisor do
+defmodule Phylax.Pathfinder.Chain.KillbotSupervisor do
   @moduledoc false
 
   use DynamicSupervisor
-  alias Phylax.Killbot.Worker
+  alias Phylax.Pathfinder.Chain.Killbot
 
   def start_link(_) do
     DynamicSupervisor.start_link(__MODULE__, [], name: __MODULE__)
@@ -15,7 +15,7 @@ defmodule Phylax.Killbot.WorkerSupervisor do
   def start_child(opts) do
     DynamicSupervisor.start_child(
       __MODULE__,
-      %{id: Worker, start: {Worker, :start_link, [opts]}, restart: :transient}
+      %{id: Killbot, start: {Killbot, :start_link, [opts]}, restart: :transient}
     )
   end
 end

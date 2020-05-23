@@ -46,6 +46,6 @@ defmodule Phylax.Killbot do
 
   defp entry_by_channel_id(channel_id) do
     from e in Entry,
-    where: e.channel_id == ^channel_id
+      where: e.channel_id == ^channel_id
   end
 end
