@@ -17,4 +17,8 @@ defmodule Phylax.Discord.Util do
     ```
     """
   end
+
+  def has_required_args?(options, args) do
+    Enum.all?(args, &Keyword.has_key?(options, &1))
+  end
 end

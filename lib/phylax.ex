@@ -7,11 +7,17 @@ defmodule Phylax do
   if it comes from the database, an external API or others.
   """
 
-  def broadcast(kill) do
+  alias Phylax.Core.Kill
+
+  def broadcast(%Kill{} = kill) do
     Phoenix.PubSub.broadcast(Phylax.PubSub, "killboard", {:kill, kill})
   end
 
-  def subscribe(topic) do
-    Phoenix.PubSub.subscribe(Phylax.PubSub, Atom.to_string(topic))
+  def subscribe(topic) when is_atom(topic) do
+    subscribe(to_string(topic))
+  end
+
+  def subscribe(topic) when is_binary(topic) do
+    Phoenix.PubSub.subscribe(Phylax.PubSub, topic)
   end
 end

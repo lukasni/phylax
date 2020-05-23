@@ -35,3 +35,5 @@ npm-debug.log
 
 # Release artifacts
 /rel/artifacts/*
+
+/config/dev.secret.exs
