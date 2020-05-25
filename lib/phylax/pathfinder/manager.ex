@@ -109,8 +109,11 @@ defmodule Phylax.Pathfinder.Manager do
     end
 
     state
-    |> update_in([:workers, :killbots, chain.channel_id], &(&1 || 0) + 1)
-    |> update_in([:maps, chain.map_id, chain.root_system_id, :killbots], &MapSet.put(&1, chain.channel_id))
+    |> update_in([:workers, :killbots, chain.channel_id], &((&1 || 0) + 1))
+    |> update_in(
+      [:maps, chain.map_id, chain.root_system_id, :killbots],
+      &MapSet.put(&1, chain.channel_id)
+    )
   end
 
   defp remove_killbot(state, chain) do
@@ -125,9 +128,12 @@ defmodule Phylax.Pathfinder.Manager do
       PF.Chain.Killbot.unsubscribe(chain.channel_id, {chain.map_id, chain.root_system_id})
 
       state
-      |> update_in([:workers, :killbots, chain.channel_id], & &1-1)
+      |> update_in([:workers, :killbots, chain.channel_id], &(&1 - 1))
     end
-    |> update_in([:maps, chain.map_id, chain.root_system_id, :killbots], &MapSet.delete(&1, chain.channel_id))
+    |> update_in(
+      [:maps, chain.map_id, chain.root_system_id, :killbots],
+      &MapSet.delete(&1, chain.channel_id)
+    )
   end
 
   defp maybe_unwatch_chain(state, chain) do
