@@ -9,7 +9,9 @@ defmodule Phylax.Discord.Consumer.Ready do
     "pathfinder" => %{
       "subscribe" => Commands.Pathfinder.Subscribe,
       "subscribed" => Commands.Pathfinder.Subscribed,
-      "unsubscribe" => Commands.Pathfinder.Unsubscribe
+      "unsubscribe" => Commands.Pathfinder.Unsubscribe,
+      "watchlist" => Commands.Pathfinder.Watchlist,
+      "config" => Commands.Pathfinder.Config
     },
     "killboard" => %{
       "subscribe" => Commands.Killbot.Subscribe,

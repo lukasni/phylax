@@ -11,6 +11,7 @@ defmodule Phylax.Pathfinder.Supervisor do
       Phylax.Pathfinder.Repo,
       {Registry, keys: :unique, name: Phylax.Pathfinder.WorkerRegistry},
       Phylax.Pathfinder.Chain.KillbotSupervisor,
+      Phylax.Pathfinder.Watchlist.Supervisor,
       Phylax.Pathfinder.Map.Worker,
       Phylax.Pathfinder.Chain.Worker,
       Phylax.Pathfinder.Manager

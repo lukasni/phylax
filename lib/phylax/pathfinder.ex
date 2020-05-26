@@ -1,6 +1,5 @@
 defmodule Phylax.Pathfinder do
-  alias Phylax.Pathfinder.Chain
-  alias Phylax.Pathfinder.WatchedChain
+  alias Phylax.Pathfinder.{Chain, WatchedChain, WatchedSystem}
   alias Phylax.Repo
   import Ecto.Query
   alias Phylax.EsiHelpers, as: ESI
@@ -84,6 +83,59 @@ defmodule Phylax.Pathfinder do
       where: c.map_id == ^map_id,
       where: c.root_system_id == ^root_system_id,
       where: c.channel_id == ^channel_id
+    )
+    |> Repo.delete_all()
+  end
+
+  def list_watched_systems() do
+    WatchedSystem
+    |> Repo.all()
+  end
+
+  def list_watched_systems(user_id) do
+    Repo.all(
+      from s in WatchedSystem,
+        where: s.user_id == ^user_id
+    )
+  end
+
+  def list_watched_systems(user_id, guild_id) do
+    Repo.all(
+      from s in WatchedSystem,
+        where: s.user_id == ^user_id,
+        where: s.guild_id == ^guild_id
+    )
+  end
+
+  def add_watched_system(user_id, guild_id, system_name) do
+    with {:ok, system_id} <- ESI.search({:system, system_name}),
+         {:ok, result} <- create_watched_system(user_id, guild_id, system_id) do
+      broadcast({:watcher_added, result})
+
+      {:ok, result}
+    end
+  end
+
+  def delete_watched_system(user_id, guild_id, system_name) do
+    with {:ok, system_id} <- ESI.search({:system, system_name}),
+         {count, nil} <- remove_watched_system(user_id, guild_id, system_id) do
+      broadcast({:watcher_removed, %{user_id: user_id, guild_id: guild_id, system_id: system_id}})
+
+      {:ok, count}
+    end
+  end
+
+  defp create_watched_system(user_id, guild_id, system_id) do
+    %WatchedSystem{}
+    |> WatchedSystem.changeset(%{user_id: user_id, system_id: system_id, guild_id: guild_id})
+    |> Repo.insert()
+  end
+
+  defp remove_watched_system(user_id, guild_id, system_id) do
+    from(s in WatchedSystem,
+      where: s.user_id == ^user_id,
+      where: s.system_id == ^system_id,
+      where: s.guild_id == ^guild_id
     )
     |> Repo.delete_all()
   end
