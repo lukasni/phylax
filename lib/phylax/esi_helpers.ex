@@ -43,10 +43,14 @@ defmodule Phylax.EsiHelpers do
     {:ok, result, _meta} =
       names
       |> API.Universe.ids()
-      |> ExEsi.request
+      |> ExEsi.request()
 
     for {type, entries} <- result, entry <- entries do
-      %{entity_id: entry["id"], entity_name: entry["name"], entity_type: singular_result_type(type)}
+      %{
+        entity_id: entry["id"],
+        entity_name: entry["name"],
+        entity_type: singular_result_type(type)
+      }
     end
   end
 

@@ -25,7 +25,7 @@ pathfinder_database_url =
 
 config :phylax, Phylax.Pathfinder.Repo,
   # ssl: true,
-  url: database_url,
+  url: pathfinder_database_url,
   pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")
 
 bot_token =
@@ -35,7 +35,7 @@ bot_token =
     """
 
 config :nostrum,
-    token: bot_token
+  token: bot_token
 
 secret_key_base =
   System.get_env("SECRET_KEY_BASE") ||
@@ -61,16 +61,16 @@ config :phylax, PhylaxWeb.Endpoint,
 
 config :ex_esi,
   user_agent:
-    "Phylax/0.2.0 (#{Mix.env() |> to_string() |> String.upcase()} #{to_string(node())}) Erlang/OTP #{
-      :erlang.system_info(:otp_release)
-    } [erts-#{:erlang.system_info(:version)}] catherinesolenne/tweetfleet"
+    "Phylax/0.3.0 (PROD #{to_string(node())}) Erlang/OTP #{:erlang.system_info(:otp_release)} [erts-#{
+      :erlang.system_info(:version)
+    }] catherinesolenne/tweetfleet"
 
 # ## Using releases (Elixir v1.9+)
 #
 # If you are doing OTP releases, you need to instruct Phoenix
 # to start each relevant endpoint:
 #
-# Not setting this up yet for 0.2.0 since the webinterface is not implemented yet.
+# Not setting this up yet for 0.3.0 since the webinterface is not implemented yet.
 #
 #     config :phylax, PhylaxWeb.Endpoint, server: true
 #

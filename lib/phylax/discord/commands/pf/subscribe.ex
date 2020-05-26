@@ -64,7 +64,6 @@ defmodule Phylax.Discord.Commands.Pathfinder.Subscribe do
 
   @impl true
   def command(msg, {options, [], []}) when options != [] do
-
     response =
       with {:args, true} <- {:args, Util.has_required_args?(options, [:map, :root])},
            {:ok, _} <- PF.add_watched_chain(msg.channel_id, options) do
@@ -82,7 +81,8 @@ defmodule Phylax.Discord.Commands.Pathfinder.Subscribe do
           "No map named #{Helpers.escape_server_mentions(options[:map])} found."
 
         error ->
-          Logger.warn("#{__MODULE__}: #{inspect error}")
+          Logger.warn("#{__MODULE__}: #{inspect(error)}")
+
           """
           Unexpected error encountered, please try again.
 

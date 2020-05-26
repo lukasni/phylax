@@ -1,13 +1,12 @@
 defmodule Phylax.Pathfinder do
-  alias Phylax.Pathfinder.Chain
-  alias Phylax.Pathfinder.WatchedChain
+  alias Phylax.Pathfinder.{Chain, WatchedChain, WatchedSystem}
   alias Phylax.Repo
   import Ecto.Query
   alias Phylax.EsiHelpers, as: ESI
 
   @excluded_systems [
     # Jita
-    30000142
+    30_000_142
   ]
 
   @doc """
@@ -24,12 +23,16 @@ defmodule Phylax.Pathfinder do
   """
   @spec get_watched_chains(integer()) :: [Chain.t()]
   def get_watched_chains(channel_id) do
-    from([c, e] in chains_with_excludes(), where: c.channel_id == ^channel_id, preload: [excluded_entities: e])
+    from([c, e] in chains_with_excludes(),
+      where: c.channel_id == ^channel_id,
+      preload: [excluded_entities: e]
+    )
     |> Repo.all()
   end
 
   defp chains_with_excludes do
-    from(c in WatchedChain, left_join: e in assoc(c, :excluded_entities))
+    from c in WatchedChain,
+      left_join: e in assoc(c, :excluded_entities)
   end
 
   def add_watched_chain(channel_id, opts) do
@@ -48,7 +51,7 @@ defmodule Phylax.Pathfinder do
     end
   end
 
-  defp create_chain(map_id, root_id, channel_id, excludes \\ []) do
+  defp create_chain(map_id, root_id, channel_id, excludes) do
     %WatchedChain{}
     |> WatchedChain.changeset(%{
       map_id: map_id,
@@ -63,7 +66,10 @@ defmodule Phylax.Pathfinder do
     with {:ok, root_id} <- ESI.search({:system, root_system_name}),
          map_id when is_integer(map_id) <- Phylax.Pathfinder.Map.get_map_id(map_name),
          {count, nil} <- delete_chain(map_id, root_id, channel_id) do
-      broadcast({:chain_deleted, %{channel_id: channel_id, map_id: map_id, root_system_id: root_id}})
+      broadcast(
+        {:chain_deleted, %{channel_id: channel_id, map_id: map_id, root_system_id: root_id}}
+      )
+
       {:ok, count}
     else
       {:error, :not_found} -> {:error, :system_not_found}
@@ -81,10 +87,63 @@ defmodule Phylax.Pathfinder do
     |> Repo.delete_all()
   end
 
+  def list_watched_systems() do
+    WatchedSystem
+    |> Repo.all()
+  end
+
+  def list_watched_systems(user_id) do
+    Repo.all(
+      from s in WatchedSystem,
+        where: s.user_id == ^user_id
+    )
+  end
+
+  def list_watched_systems(user_id, guild_id) do
+    Repo.all(
+      from s in WatchedSystem,
+        where: s.user_id == ^user_id,
+        where: s.guild_id == ^guild_id
+    )
+  end
+
+  def add_watched_system(user_id, guild_id, system_name) do
+    with {:ok, system_id} <- ESI.search({:system, system_name}),
+         {:ok, result} <- create_watched_system(user_id, guild_id, system_id) do
+      broadcast({:watcher_added, result})
+
+      {:ok, result}
+    end
+  end
+
+  def delete_watched_system(user_id, guild_id, system_name) do
+    with {:ok, system_id} <- ESI.search({:system, system_name}),
+         {count, nil} <- remove_watched_system(user_id, guild_id, system_id) do
+      broadcast({:watcher_removed, %{user_id: user_id, guild_id: guild_id, system_id: system_id}})
+
+      {:ok, count}
+    end
+  end
+
+  defp create_watched_system(user_id, guild_id, system_id) do
+    %WatchedSystem{}
+    |> WatchedSystem.changeset(%{user_id: user_id, system_id: system_id, guild_id: guild_id})
+    |> Repo.insert()
+  end
+
+  defp remove_watched_system(user_id, guild_id, system_id) do
+    from(s in WatchedSystem,
+      where: s.user_id == ^user_id,
+      where: s.system_id == ^system_id,
+      where: s.guild_id == ^guild_id
+    )
+    |> Repo.delete_all()
+  end
+
   def kill_in_chain?(kill, chain) do
     systems = Phylax.Pathfinder.Chain.Worker.get_connections(chain) || []
 
-    (kill.system_id in systems) and (kill.system_id not in @excluded_systems)
+    kill.system_id in systems and kill.system_id not in @excluded_systems
   end
 
   def excluded?(kill, excludes) do
