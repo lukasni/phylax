@@ -58,9 +58,11 @@ defmodule Phylax.Discord.Commands.Pathfinder.Subscribed do
 
     """
     Map *#{map_name}* with root system *#{system["name"]}*
-        #{if chain.excluded_entities != [] do
-          "Exclude: " <> (chain.excluded_entities |> Enum.map(& &1.entity_name) |> Enum.join(", "))
-        end}
+        #{
+      if chain.excluded_entities != [] do
+        "Exclude: " <> (chain.excluded_entities |> Enum.map(& &1.entity_name) |> Enum.join(", "))
+      end
+    }
     """
   end
 end

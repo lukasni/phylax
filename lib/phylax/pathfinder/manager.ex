@@ -9,7 +9,7 @@ defmodule Phylax.Pathfinder.Manager do
       map_id_integer => %{
         root_system_id_integer => %{
           killbots: [channel_ids]
-          watchers: [channel_ids]
+          watchers: [user_ids]
         }
       }
     workers: %{
@@ -17,7 +17,7 @@ defmodule Phylax.Pathfinder.Manager do
         channel_id: count
       }
       watchers: %{
-        channel_id: count
+        user_id: count
       }
     }
   }
@@ -48,6 +48,7 @@ defmodule Phylax.Pathfinder.Manager do
     state =
       state
       |> start_chain_killbots(PF.get_watched_chains())
+      |> start_watchlists(PF.list_watched_systems())
 
     Phylax.Pathfinder.subscribe()
 
@@ -68,6 +69,38 @@ defmodule Phylax.Pathfinder.Manager do
     {:noreply, state}
   end
 
+  def handle_info({:watcher_added, watcher}, state) do
+    {map_id, root} = PF.Config.get_default_chain(watcher.guild_id)
+
+    watch = %{
+      map_id: map_id,
+      root_system_id: root,
+      user_id: watcher.user_id,
+      system_id: watcher.system_id
+    }
+
+    {:noreply, start_system_watcher(watch, state)}
+  end
+
+  def handle_info({:watcher_removed, watcher}, state) do
+    {map_id, root} = PF.Config.get_default_chain(watcher.guild_id)
+
+    watch = %{
+      map_id: map_id,
+      root_system_id: root,
+      user_id: watcher.user_id,
+      system_id: watcher.system_id
+    }
+
+    state =
+      state
+      |> remove_watcher(watch)
+      |> maybe_unwatch_chain(watch)
+      |> maybe_unwatch_map(watch)
+
+    {:noreply, state}
+  end
+
   def handle_info(_, state) do
     {:noreply, state}
   end
@@ -81,6 +114,20 @@ defmodule Phylax.Pathfinder.Manager do
     |> watch_map(watched_chain)
     |> watch_chain(watched_chain)
     |> add_killbot(watched_chain)
+  end
+
+  defp start_watchlists(state, watched_systems) do
+    for {{map, root}, watches} <- PF.Watchlist.group_chains(watched_systems), watch <- watches do
+      %{map_id: map, root_system_id: root, user_id: watch.user_id, system_id: watch.system_id}
+    end
+    |> Enum.reduce(state, &start_system_watcher/2)
+  end
+
+  def start_system_watcher(watched_system, state) do
+    state
+    |> watch_map(watched_system)
+    |> watch_chain(watched_system)
+    |> add_watcher(watched_system)
   end
 
   defp watch_map(state, %{map_id: map_id}) do
@@ -109,8 +156,11 @@ defmodule Phylax.Pathfinder.Manager do
     end
 
     state
-    |> update_in([:workers, :killbots, chain.channel_id], &(&1 || 0) + 1)
-    |> update_in([:maps, chain.map_id, chain.root_system_id, :killbots], &MapSet.put(&1, chain.channel_id))
+    |> update_in([:workers, :killbots, chain.channel_id], &((&1 || 0) + 1))
+    |> update_in(
+      [:maps, chain.map_id, chain.root_system_id, :killbots],
+      &MapSet.put(&1, chain.channel_id)
+    )
   end
 
   defp remove_killbot(state, chain) do
@@ -125,13 +175,62 @@ defmodule Phylax.Pathfinder.Manager do
       PF.Chain.Killbot.unsubscribe(chain.channel_id, {chain.map_id, chain.root_system_id})
 
       state
-      |> update_in([:workers, :killbots, chain.channel_id], & &1-1)
+      |> update_in([:workers, :killbots, chain.channel_id], &(&1 - 1))
     end
-    |> update_in([:maps, chain.map_id, chain.root_system_id, :killbots], &MapSet.delete(&1, chain.channel_id))
+    |> update_in(
+      [:maps, chain.map_id, chain.root_system_id, :killbots],
+      &MapSet.delete(&1, chain.channel_id)
+    )
+  end
+
+  defp add_watcher(state, watch) do
+    if watch.user_id not in Map.keys(state.workers.watchers) do
+      PF.Watchlist.Supervisor.start_child(user_id: watch.user_id)
+    else
+      PF.Watchlist.Worker.subscribe(
+        watch.user_id,
+        {watch.map_id, watch.root_system_id},
+        watch.system_id
+      )
+    end
+
+    state
+    |> update_in([:workers, :watchers, watch.user_id], &((&1 || 0) + 1))
+    |> update_in(
+      [:maps, watch.map_id, watch.root_system_id, :watchers],
+      &MapSet.put(&1, watch.user_id)
+    )
+  end
+
+  defp remove_watcher(state, watch) do
+    if get_in(state, [:workers, :watchers, watch.user_id]) == 1 do
+      Logger.info("Stoping worker #{watch.user_id}")
+      PF.Watchlist.Worker.stop(watch.user_id)
+
+      state
+      |> delete_in([:workers, :watchers, watch.user_id])
+    else
+      Logger.info("Decrementing worker #{watch.user_id}")
+
+      PF.Watchlist.Worker.unsubscribe(
+        watch.user_id,
+        {watch.map_id, watch.root_system_id},
+        watch.system_id
+      )
+
+      state
+      |> update_in([:workers, :watchers, watch.user_id], &(&1 - 1))
+    end
+    |> update_in(
+      [:maps, watch.map_id, watch.root_system_id, :watchers],
+      &MapSet.delete(&1, watch.user_id)
+    )
   end
 
   defp maybe_unwatch_chain(state, chain) do
-    if MapSet.size(get_in(state, [:maps, chain.map_id, chain.root_system_id, :killbots])) == 0 do
+    active_workers = get_in(state, [:maps, chain.map_id, chain.root_system_id])
+
+    if MapSet.size(active_workers.killbots) == 0 and MapSet.size(active_workers.watchers) == 0 do
       PF.Chain.Worker.stop_tracking_chain({chain.map_id, chain.root_system_id})
 
       state
