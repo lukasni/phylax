@@ -21,4 +21,9 @@ defmodule Phylax.Discord.Util do
   def has_required_args?(options, args) do
     Enum.all?(args, &Keyword.has_key?(options, &1))
   end
+
+  def replace_fancy_quotes(msg) do
+    msg
+    |> Map.update!(:content, fn s -> String.replace(s, ~r/[“”]/, ~s(")) end)
+  end
 end
