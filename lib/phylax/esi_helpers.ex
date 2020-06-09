@@ -20,7 +20,7 @@ defmodule Phylax.EsiHelpers do
     kill.killmail
     |> name_ids()
     |> API.Universe.names()
-    |> retry_404()
+    |> ExEsi.request(retry404: true)
     |> remap_names()
   end
 
@@ -31,7 +31,7 @@ defmodule Phylax.EsiHelpers do
   def names(ids) when is_list(ids) do
     ids
     |> API.Universe.names()
-    |> retry_404()
+    |> ExEsi.request(retry404: true)
     |> remap_names()
   end
 
@@ -57,7 +57,7 @@ defmodule Phylax.EsiHelpers do
   def get_name(id) do
     [id]
     |> API.Universe.names()
-    |> retry_404()
+    |> ExEsi.request(retry404: true)
     |> pluck_name(id)
   end
 
@@ -143,19 +143,6 @@ defmodule Phylax.EsiHelpers do
   defp pluck_name({:ok, names_result, _meta}, id) do
     names_result
     |> Enum.find_value(fn x -> if x["id"] == id, do: x["name"], else: false end)
-  end
-
-  defp retry_404(op) do
-    case ExEsi.request(op) do
-      {:ok, _, _} = resp ->
-        resp
-
-      {:error, {:http_error, 404, _}, _} ->
-        wait = max(100, :rand.uniform(500))
-        Logger.warn("NAMES returned 404, retrying in #{wait} ms")
-        :timer.sleep(wait)
-        retry_404(op)
-    end
   end
 
   defp name_ids(killmail) do
