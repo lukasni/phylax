@@ -23,7 +23,7 @@ defmodule Phylax.Discord do
         type: type
       )
 
-    Nostrum.Api.create_message(channel, embed: embed)
+    Nostrum.Api.create_message(channel, embed: embed, content: kill.url)
   end
 
   def post_watchlist(user_id, added_systems) do
