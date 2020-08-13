@@ -8,7 +8,7 @@ defmodule Phylax.Zkillboard.Client do
   use WebSockex
   require Logger
 
-  @url "wss://zkillboard.com:2096"
+  @url "wss://zkillboard.com/websocket/"
   @process_name __MODULE__
 
   # Client methods
