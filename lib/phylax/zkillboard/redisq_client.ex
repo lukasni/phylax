@@ -1,0 +1,106 @@
+defmodule Phylax.Zkillboard.RedisqClient do
+  use GenServer
+
+  require Logger
+
+  alias Phylax.Core.Kill
+
+  @name __MODULE__
+  @base_url "https://redisq.zkillboard.com/listen.php"
+  @queue_id "NVACA-Phylax-#{Mix.env()}"
+
+  def start_link(_) do
+    GenServer.start_link(__MODULE__, [], name: @name)
+  end
+
+  ##################
+  # Server Callbacks
+  ##################
+
+  def init(_) do
+    send(self(), :next)
+    {:ok, 0}
+  end
+
+  def handle_info(:next, state) do
+    state =
+      case process_response(fetch_next()) do
+        %Kill{} ->
+          state + 1
+
+        _ ->
+          state
+      end
+
+    send(self(), :next)
+    {:noreply, state}
+  end
+
+  ##################
+  # Helper Functions
+  ##################
+
+  def process_response(response) do
+    with {:ok, %{body: body}} <- response,
+         {:ok, %{"package" => package}} <- Jason.decode(body),
+         {:ok, killmail} <- extract_package(package),
+         {:ok, kill} <- parse_killmail(killmail) do
+      Logger.debug("Received Kill #{kill.kill_id}")
+      Phylax.broadcast(kill)
+      kill
+    else
+      {:error, %HTTPoison.Error{} = error} ->
+        Logger.info("HTTP Error: #{inspect error}")
+
+      {:error, %Jason.DecodeError{} = error} ->
+        Logger.info("Decode Error: #{inspect error}")
+
+      {:error, :empty_package} ->
+        Logger.debug("Empty package. No killmails in past 10 seconds")
+
+      {:error, {:invalid_killmail, killmail, error}} ->
+        Logger.info("Invalid Killmail: #{inspect killmail}. Raised error: #{inspect error}")
+
+      error ->
+        Logger.info("Unexpected error handling killmail: #{inspect error}")
+    end
+  end
+
+  def fetch_next(opts \\ []) do
+    uri_string(opts)
+    |> HTTPoison.get(headers(), recv_timeout: 11_000)
+  end
+
+  def extract_package(nil), do: {:error, :empty_package}
+  def extract_package(%{"killmail" => killmail, "zkb" => zkb}) do
+    zkb =
+      zkb
+      |> Map.put("url", zkb["href"])
+    {:ok, Map.put(killmail, "zkb", zkb)}
+  end
+
+  def parse_killmail(killmail) do
+    try do
+      {:ok, Kill.from_killmail(killmail)}
+    rescue
+      error ->
+        {:error, {:invalid_killmail, killmail, error}}
+    end
+  end
+
+  def uri_string(opts \\ []) do
+    opts =
+      Keyword.merge([queueID: @queue_id], opts)
+
+    @base_url
+    |> URI.parse()
+    |> Map.put(:query, URI.encode_query(opts))
+    |> URI.to_string()
+  end
+
+  def headers() do
+    [
+      {"User-Agent", Application.get_env(:ex_esi, :user_agent)}
+    ]
+  end
+end
