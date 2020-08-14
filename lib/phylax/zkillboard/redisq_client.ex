@@ -7,6 +7,7 @@ defmodule Phylax.Zkillboard.RedisqClient do
 
   @name __MODULE__
   @base_url "https://redisq.zkillboard.com/listen.php"
+  @killmail_url "https://zkillboard.com/kill"
   @queue_id "NVACA-Phylax-#{Mix.env()}"
 
   def start_link(_) do
@@ -72,10 +73,12 @@ defmodule Phylax.Zkillboard.RedisqClient do
   end
 
   def extract_package(nil), do: {:error, :empty_package}
-  def extract_package(%{"killmail" => killmail, "zkb" => zkb}) do
+  def extract_package(%{"killID" => kill_id, "killmail" => killmail, "zkb" => zkb}) do
+    # This should probably not be done here, but I really want to keep the clients compatible.
     zkb =
       zkb
-      |> Map.put("url", zkb["href"])
+      |> Map.put("url", "#{@killmail_url}/#{kill_id}/")
+
     {:ok, Map.put(killmail, "zkb", zkb)}
   end
 
