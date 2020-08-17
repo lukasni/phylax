@@ -1,4 +1,4 @@
-defmodule Phylax.Zkillboard.Client do
+defmodule Phylax.Zkillboard.WebsocketClient do
   @moduledoc """
   Zkillboard Websocket client
 
