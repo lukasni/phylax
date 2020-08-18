@@ -102,6 +102,8 @@ defmodule Phylax.Discord.Embeds.Kill do
     end
   end
 
+  defp format_link(nil), do: ":question:"
+
   defp format_link(name) do
     format_link(name.name, name)
   end
@@ -115,7 +117,7 @@ defmodule Phylax.Discord.Embeds.Kill do
   end
 
   defp format_ship(_, _) do
-    "N/A"
+    ":question:"
   end
 
   defp format_damage(party) do
