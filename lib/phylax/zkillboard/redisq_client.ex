@@ -14,6 +14,10 @@ defmodule Phylax.Zkillboard.RedisqClient do
     GenServer.start_link(__MODULE__, [], name: @name)
   end
 
+  def get_state() do
+    GenServer.call(@name, :get_state)
+  end
+
   ##################
   # Server Callbacks
   ##################
@@ -21,6 +25,10 @@ defmodule Phylax.Zkillboard.RedisqClient do
   def init(_) do
     send(self(), :next)
     {:ok, 0}
+  end
+
+  def handle_call(:get_state, _from, state) do
+    {:reply, state, state}
   end
 
   def handle_info(:next, state) do
@@ -42,7 +50,7 @@ defmodule Phylax.Zkillboard.RedisqClient do
   ##################
 
   def process_response(response) do
-    with {:ok, %{body: body}} <- response,
+    with {:ok, %{body: body, status_code: 200}} <- response,
          {:ok, %{"package" => package}} <- Jason.decode(body),
          {:ok, killmail} <- extract_package(package),
          {:ok, kill} <- parse_killmail(killmail) do
@@ -50,11 +58,14 @@ defmodule Phylax.Zkillboard.RedisqClient do
       Phylax.broadcast(kill)
       kill
     else
+      {:ok, %{status_code: 429} = response} ->
+        Logger.info("Rate Limiting: #{inspect response}")
+
       {:error, %HTTPoison.Error{} = error} ->
         Logger.info("HTTP Error: #{inspect error}")
 
       {:error, %Jason.DecodeError{} = error} ->
-        Logger.info("Decode Error: #{inspect error}")
+        Logger.info("Decode Error: #{inspect error}\n\nResponse: #{inspect response}")
 
       {:error, :empty_package} ->
         Logger.debug("Empty package. No killmails in past 10 seconds")
@@ -69,7 +80,7 @@ defmodule Phylax.Zkillboard.RedisqClient do
 
   def fetch_next(opts \\ []) do
     uri_string(opts)
-    |> HTTPoison.get(headers(), recv_timeout: 11_000)
+    |> HTTPoison.get(headers(), recv_timeout: 15_000)
   end
 
   def extract_package(nil), do: {:error, :empty_package}
