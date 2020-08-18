@@ -61,7 +61,7 @@ config :phylax, PhylaxWeb.Endpoint,
 
 config :ex_esi,
   user_agent:
-    "Phylax/0.4.0 (PROD #{to_string(node())}) Erlang/OTP #{:erlang.system_info(:otp_release)} [erts-#{
+    "Phylax/0.4.1 (PROD #{to_string(node())}) Erlang/OTP #{:erlang.system_info(:otp_release)} [erts-#{
       :erlang.system_info(:version)
     }] catherinesolenne/tweetfleet"
 
@@ -70,7 +70,7 @@ config :ex_esi,
 # If you are doing OTP releases, you need to instruct Phoenix
 # to start each relevant endpoint:
 #
-# Not setting this up yet for 0.4.0 since the webinterface is not implemented yet.
+# Not setting this up yet for 0.4.1 since the webinterface is not implemented yet.
 #
 #     config :phylax, PhylaxWeb.Endpoint, server: true
 #
