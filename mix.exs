@@ -4,7 +4,7 @@ defmodule Phylax.MixProject do
   def project do
     [
       app: :phylax,
-      version: "0.4.2",
+      version: "0.4.3",
       elixir: "~> 1.7",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
@@ -52,7 +52,7 @@ defmodule Phylax.MixProject do
       {:websockex, "~> 0.4"},
       {:libgraph, github: "tinfoil/libgraph"},
       {:myxql, ">= 0.0.0"},
-      {:ex_esi, git: "git@github.com:lukasni/ex-esi.git"},
+      {:ex_esi, git: "git@github.com:lukasni/ex-esi.git", tag: "v0.2.0"},
       {:cowlib, "2.8.0", override: true},
       {:number, "~> 1.0"}
     ]
