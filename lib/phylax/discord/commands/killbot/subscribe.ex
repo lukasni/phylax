@@ -8,7 +8,6 @@ defmodule Phylax.Discord.Commands.Killbot.Subscribe do
   require Logger
 
   alias Nosedrum.Predicates
-  alias Nosedrum.Helpers
   alias Nostrum.Api
   alias Phylax.Discord.Util
   alias Phylax.Killbot

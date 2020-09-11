@@ -64,6 +64,8 @@ defmodule Phylax.Zkillboard.RedisqClient do
     else
       {:ok, %{status_code: 429} = response} ->
         Logger.info("Rate Limiting: #{inspect response}")
+        Logger.info("Sleeping for 10 seconds")
+        :timer.sleep(:timer.seconds(10))
 
       {:error, %HTTPoison.Error{} = error} ->
         Logger.info("HTTP Error: #{inspect error}")
