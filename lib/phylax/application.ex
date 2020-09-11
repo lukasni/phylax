@@ -24,7 +24,7 @@ defmodule Phylax.Application do
       # Start Pathfinder Systems
       Phylax.Pathfinder.Supervisor,
       # Start Zkillboard websocket
-      Phylax.Zkillboard.RedisqClient,
+      Phylax.Zkillboard.WebsocketClient,
       # Start the Endpoint (http/https)
       PhylaxWeb.Endpoint
       # Start a worker by calling: Phylax.Worker.start_link(arg)
