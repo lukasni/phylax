@@ -12,7 +12,7 @@ config :phylax,
 
 config :ex_esi,
   user_agent:
-    "Phylax/0.4.3 (#{Mix.env() |> to_string() |> String.upcase()} #{to_string(node())}) Erlang/OTP #{
+    "Phylax/0.4.4 (#{Mix.env() |> to_string() |> String.upcase()} #{to_string(node())}) Erlang/OTP #{
       :erlang.system_info(:otp_release)
     } [erts-#{:erlang.system_info(:version)}] catherinesolenne/tweetfleet"
 
