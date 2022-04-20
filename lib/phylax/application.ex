@@ -9,12 +9,21 @@ defmodule Phylax.Application do
     children = [
       # Start the Ecto repository
       Phylax.Repo,
-      ExEsi.Cache.MapStore,
       # Start Discord Systems
+      ExEsi.Cache.MapStore,
       Nosedrum.Storage.ETS,
       Phylax.Discord.ConsumerSupervisor,
       # Start the Telemetry supervisor
       PhylaxWeb.Telemetry,
+      # Start the finch client
+      {Finch,
+       name: FinchClient,
+       pools: %{
+         :default => [size: 10],
+         "https://esi.evetech.net" => [size: 50, count: 10]
+       }},
+      # Start the ESI Cache server
+      ExEsi.Cache.ETSStore,
       # Start the PubSub system
       {Phoenix.PubSub, name: Phylax.PubSub},
       # Start Killbot Systems
@@ -23,8 +32,8 @@ defmodule Phylax.Application do
       Phylax.Killbot.Manager,
       # Start Pathfinder Systems
       Phylax.Pathfinder.Supervisor,
-      # Start Zkillboard websocket
-      Phylax.Zkillboard.WebsocketClient,
+      # Start Zkillboard client
+      Phylax.Zkillboard.RedisqClient,
       # Start the Endpoint (http/https)
       PhylaxWeb.Endpoint
       # Start a worker by calling: Phylax.Worker.start_link(arg)
