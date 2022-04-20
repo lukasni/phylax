@@ -7,12 +7,8 @@ defmodule PhylaxWeb.Endpoint do
   @session_options [
     store: :cookie,
     key: "_phylax_key",
-    signing_salt: "8HB5WbX/"
+    signing_salt: "XqTAzF4x"
   ]
-
-  socket "/socket", PhylaxWeb.UserSocket,
-    websocket: true,
-    longpoll: false
 
   socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
 
@@ -24,7 +20,7 @@ defmodule PhylaxWeb.Endpoint do
     at: "/",
     from: :phylax,
     gzip: false,
-    only: ~w(css fonts images js favicon.ico robots.txt)
+    only: ~w(assets fonts images favicon.ico robots.txt)
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.

@@ -54,7 +54,7 @@ defmodule Phylax.Zkillboard.RedisqClient do
   ##################
 
   def process_response(response) do
-    with {:ok, %{body: body, status_code: 200}} <- response,
+    with {:ok, %{body: body, status: 200}} <- response,
          {:ok, %{"package" => package}} <- Jason.decode(body),
          {:ok, killmail} <- extract_package(package),
          {:ok, kill} <- parse_killmail(killmail) do
@@ -62,12 +62,12 @@ defmodule Phylax.Zkillboard.RedisqClient do
       Phylax.broadcast(kill)
       kill
     else
-      {:ok, %{status_code: 429} = response} ->
+      {:ok, %{status: 429} = response} ->
         Logger.info("Rate Limiting: #{inspect response}")
         Logger.info("Sleeping for 10 seconds")
         :timer.sleep(:timer.seconds(10))
 
-      {:error, %HTTPoison.Error{} = error} ->
+      {:error, %Finch.Error{} = error} ->
         Logger.info("HTTP Error: #{inspect error}")
 
       {:error, %Jason.DecodeError{} = error} ->
@@ -85,8 +85,8 @@ defmodule Phylax.Zkillboard.RedisqClient do
   end
 
   def fetch_next(opts \\ []) do
-    uri_string(opts)
-    |> HTTPoison.get(headers(), recv_timeout: 15_000)
+    Finch.build(:get, uri_string(opts))
+    |> Finch.request(FinchClient)
   end
 
   def extract_package(nil), do: {:error, :empty_package}

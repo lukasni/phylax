@@ -5,16 +5,16 @@ defmodule Phylax.Zkillboard do
     zkb =
       kill_id
       |> kill_url()
-      |> HTTPoison.get!(headers())
+      |> get!(headers())
       |> Map.get(:body)
       |> Jason.decode!()
       |> hd()
       |> Map.get("zkb")
+      |> IO.inspect()
 
     {:ok, esi, _meta} =
       kill_id
       |> ExEsi.API.Killmails.get(zkb["hash"])
-      |> ExEsi.API.get()
       |> ExEsi.request()
 
     esi
@@ -29,5 +29,13 @@ defmodule Phylax.Zkillboard do
     [
       {"User-Agent", Application.get_env(:ex_esi, :user_agent)}
     ]
+  end
+
+  defp get!(url, headers) do
+    {:ok, result} =
+      Finch.build(:get, url, headers)
+      |> Finch.request(FinchClient)
+
+    result
   end
 end

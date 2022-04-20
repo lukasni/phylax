@@ -4,8 +4,8 @@ defmodule Phylax.MixProject do
   def project do
     [
       app: :phylax,
-      version: "0.4.4",
-      elixir: "~> 1.7",
+      version: "0.5.0",
+      elixir: "~> 1.11",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
@@ -33,30 +33,34 @@ defmodule Phylax.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix, "~> 1.5.1"},
-      {:phoenix_ecto, "~> 4.1"},
-      {:ecto_sql, "~> 3.4"},
+      {:phoenix, "~> 1.6.6"},
+      {:phoenix_ecto, "~> 4.4"},
+      {:ecto_sql, "~> 3.6"},
       {:postgrex, ">= 0.0.0"},
-      {:phoenix_live_view, "~> 0.12.0"},
-      {:floki, ">= 0.0.0", only: :test},
-      {:phoenix_html, "~> 2.11"},
+      {:phoenix_html, "~> 3.0"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_dashboard, "~> 0.2.0"},
-      {:telemetry_metrics, "~> 0.4"},
-      {:telemetry_poller, "~> 0.4"},
-      {:gettext, "~> 0.11"},
-      {:jason, "~> 1.0"},
-      {:plug_cowboy, "~> 2.0", override: true},
-      {:nosedrum, "~> 0.2"},
-      {:nostrum, github: "Kraigie/nostrum", override: true},
-      {:websockex, "~> 0.4"},
+      {:phoenix_live_view, "~> 0.17.5"},
+      {:floki, ">= 0.30.0", only: :test},
+      {:phoenix_live_dashboard, "~> 0.6"},
+      {:esbuild, "~> 0.3", runtime: Mix.env() == :dev},
+      {:swoosh, "~> 1.3"},
+      {:telemetry_metrics, "~> 0.6"},
+      {:telemetry_poller, "~> 1.0"},
+      {:gettext, "~> 0.18"},
+      {:jason, "~> 1.2"},
+      {:plug_cowboy, "~> 2.5"},
+      {:nostrum, "~> 0.4"},
+      {:nosedrum, "~> 0.4"},
       {:libgraph, github: "tinfoil/libgraph"},
       {:myxql, ">= 0.0.0"},
       {:ex_esi, git: "git@github.com:lukasni/ex-esi.git", tag: "v0.2.0"},
-      {:cowlib, "2.8.0", override: true},
-      {:number, "~> 1.0"}
+      {:number, "~> 1.0"},
+      {:cowlib, "~> 2.11.0", override: true},
+      {:finch, "~> 0.11.0"},
+      {:tailwind, "~> 0.1", runtime: Mix.env() == :dev}
     ]
   end
+
 
   # Aliases are shortcuts or tasks specific to the current project.
   # For example, to install project dependencies and perform other setup tasks, run:

@@ -4,26 +4,24 @@ defmodule Phylax.Discord.Consumer.Ready do
   alias Phylax.Discord.Commands
 
   @commands %{
-    "help" => Commands.Help,
-    "ping" => Commands.Ping,
-    "pathfinder" => %{
-      "subscribe" => Commands.Pathfinder.Subscribe,
-      "subscribed" => Commands.Pathfinder.Subscribed,
-      "unsubscribe" => Commands.Pathfinder.Unsubscribe,
-      "watchlist" => Commands.Pathfinder.Watchlist,
-      "config" => Commands.Pathfinder.Config
-    },
-    "killboard" => %{
-      "subscribe" => Commands.Killbot.Subscribe,
-      "subscribed" => Commands.Killbot.Subscribed,
-      "unsubscribe" => Commands.Killbot.Unsubscribe
-    }
-  }
-
-  @aliases %{
-    "man" => Map.fetch!(@commands, "help"),
-    "pf" => Map.fetch!(@commands, "pathfinder"),
-    "kb" => Map.fetch!(@commands, "killboard")
+    ["help"] => Commands.Help,
+    ["ping"] => Commands.Ping,
+    ["pathfinder", "subscribe"] => Commands.Pathfinder.Subscribe,
+    ["pf", "subscribe"] => Commands.Pathfinder.Subscribe,
+    ["pathfinder", "subscribed"] => Commands.Pathfinder.Subscribed,
+    ["pf", "subscribed"] => Commands.Pathfinder.Subscribed,
+    ["pathfinder", "unsubscribe"] => Commands.Pathfinder.Unsubscribe,
+    ["pf", "unsubscribe"] => Commands.Pathfinder.Unsubscribe,
+    ["pathfinder", "watchlist"] => Commands.Pathfinder.Watchlist,
+    ["pf", "watchlist"] => Commands.Pathfinder.Watchlist,
+    ["pathfinder", "config"] => Commands.Pathfinder.Config,
+    ["pf", "config"] => Commands.Pathfinder.Config,
+    ["kb", "subscribe"] => Commands.Killbot.Subscribe,
+    ["killboard", "subscribe"] => Commands.Killbot.Subscribe,
+    ["kb", "subscribed"] => Commands.Killbot.Subscribed,
+    ["killboard", "subscribed"] => Commands.Killbot.Subscribed,
+    ["kb", "unsubscribe"] => Commands.Killbot.Unsubscribe,
+    ["killboard", "unsubscribe"] => Commands.Killbot.Unsubscribe
   }
 
   @bot_prefix Application.fetch_env!(:nosedrum, :prefix)
@@ -34,8 +32,7 @@ defmodule Phylax.Discord.Consumer.Ready do
   end
 
   defp load_commands() do
-    [@commands, @aliases]
-    |> Stream.concat()
-    |> Enum.each(fn {name, command} -> CommandStorage.add_command({name}, command) end)
+    @commands
+    |> Enum.each(fn {name, command} -> CommandStorage.add_command(name, command) end)
   end
 end

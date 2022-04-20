@@ -9,6 +9,8 @@ defmodule PhylaxWeb.Telemetry do
   @impl true
   def init(_arg) do
     children = [
+      # Telemetry poller will execute the given period measurements
+      # every 10_000ms. Learn more here: https://hexdocs.pm/telemetry_metrics
       {:telemetry_poller, measurements: periodic_measurements(), period: 10_000}
       # Add reporters as children of your supervision tree.
       # {Telemetry.Metrics.ConsoleReporter, metrics: metrics()}
@@ -29,11 +31,27 @@ defmodule PhylaxWeb.Telemetry do
       ),
 
       # Database Metrics
-      summary("phylax.repo.query.total_time", unit: {:native, :millisecond}),
-      summary("phylax.repo.query.decode_time", unit: {:native, :millisecond}),
-      summary("phylax.repo.query.query_time", unit: {:native, :millisecond}),
-      summary("phylax.repo.query.queue_time", unit: {:native, :millisecond}),
-      summary("phylax.repo.query.idle_time", unit: {:native, :millisecond}),
+      summary("phylax.repo.query.total_time",
+        unit: {:native, :millisecond},
+        description: "The sum of the other measurements"
+      ),
+      summary("phylax.repo.query.decode_time",
+        unit: {:native, :millisecond},
+        description: "The time spent decoding the data received from the database"
+      ),
+      summary("phylax.repo.query.query_time",
+        unit: {:native, :millisecond},
+        description: "The time spent executing the query"
+      ),
+      summary("phylax.repo.query.queue_time",
+        unit: {:native, :millisecond},
+        description: "The time spent waiting for a database connection"
+      ),
+      summary("phylax.repo.query.idle_time",
+        unit: {:native, :millisecond},
+        description:
+          "The time the connection spent waiting before being checked out for the query"
+      ),
 
       # VM Metrics
       summary("vm.memory.total", unit: {:byte, :kilobyte}),

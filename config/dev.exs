@@ -2,32 +2,32 @@ use Mix.Config
 
 # Configure your database
 config :phylax, Phylax.Repo,
-  username: "postgres",
-  password: "postgres",
-  database: "phylax_dev",
-  hostname: "localhost",
+  # username: "postgres",
+  # password: "postgres",
+  # hostname: "localhost",
+  socket_dir: "/var/run/postgresql",
+  database: "tutor_dev",
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
-# For development, we disable any cache and enable
+## For development, we disable any cache and enable
 # debugging and code reloading.
 #
 # The watchers configuration can be used to run external
 # watchers to your application. For example, we use it
-# with webpack to recompile .js and .css sources.
+# with esbuild to bundle .js and .css sources.
 config :phylax, PhylaxWeb.Endpoint,
-  http: [port: 4000],
-  debug_errors: true,
-  code_reloader: true,
+  # Binding to loopback ipv4 address prevents access from other machines.
+  # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
+  http: [ip: {0, 0, 0, 0}, port: 4000],
   check_origin: false,
+  code_reloader: true,
+  debug_errors: true,
+  secret_key_base: "JJss2T4/BDfLqLjF+oRxNPEtQjLwS8QWYuZ7FbgAoEPvb34aB19wkXdhfFLfNQcL",
   watchers: [
-    node: [
-      "node_modules/webpack/bin/webpack.js",
-      "--mode",
-      "development",
-      "--watch-stdin",
-      cd: Path.expand("../assets", __DIR__)
-    ]
+    # Start the esbuild watcher by calling Esbuild.install_and_run(:default, args)
+    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
+    tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
   ]
 
 # ## SSL Support
