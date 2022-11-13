@@ -36,7 +36,8 @@ config :nostrum,
     :guild_message_reactions,
     :guild_messages,
     :guild_presences,
-    :guilds
+    :guilds,
+    :message_content
   ]
 
 config :phylax, Phylax.Cache.ChainCache, expire_after: :timer.minutes(1)
