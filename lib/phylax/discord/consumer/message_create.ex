@@ -9,7 +9,7 @@ defmodule Phylax.Discord.Consumer.MessageCreate do
   alias Nostrum.Api
 
   def handle(msg) do
-    msg = Phylax.Discord.UJtil.replace_fancy_quotes(msg)
+    msg = Phylax.Discord.Util.replace_fancy_quotes(msg)
 
     unless msg.author.bot do
       case CommandInvoker.handle_message(msg, @nosedrum_storage) do
