@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 # Configure your database
 #
@@ -8,21 +8,26 @@ use Mix.Config
 config :phylax, Phylax.Repo,
   username: "postgres",
   password: "postgres",
-  database: "phylax_test#{System.get_env("MIX_TEST_PARTITION")}",
   hostname: "localhost",
-  pool: Ecto.Adapters.SQL.Sandbox
+  database: "phylax_test#{System.get_env("MIX_TEST_PARTITION")}",
+  pool: Ecto.Adapters.SQL.Sandbox,
+  pool_size: 10
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
 config :phylax, PhylaxWeb.Endpoint,
-  http: [port: 4002],
+  http: [ip: {127, 0, 0, 1}, port: 4002],
+  secret_key_base: "CqcXAFdH8t+MISPoUNWQswsWoJg9dECuALaBcZ/X8fNVk/ees1rhirXPYwqVcJhz",
   server: false
 
 # In test we don't send emails.
-config :tutor, Tutor.Mailer, adapter: Swoosh.Adapters.Test
+config :phylax, Phylax.Mailer, adapter: Swoosh.Adapters.Test
+
+# Disable swoosh api client as it is only required for production adapters.
+config :swoosh, :api_client, false
 
 # Print only warnings and errors during test
-config :logger, level: :warn
+config :logger, level: :warning
 
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime

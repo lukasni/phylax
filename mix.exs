@@ -4,10 +4,9 @@ defmodule Phylax.MixProject do
   def project do
     [
       app: :phylax,
-      version: "0.5.0",
-      elixir: "~> 1.11",
+      version: "0.6.0",
+      elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
-      compilers: [:phoenix] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps()
@@ -33,31 +32,34 @@ defmodule Phylax.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix, "~> 1.6.6"},
+      {:phoenix, "~> 1.7.0-rc.0", override: true},
       {:phoenix_ecto, "~> 4.4"},
       {:ecto_sql, "~> 3.6"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 3.0"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_view, "~> 0.17.5"},
+      {:phoenix_live_view, "~> 0.18.3"},
+      {:heroicons, "~> 0.5"},
       {:floki, ">= 0.30.0", only: :test},
-      {:phoenix_live_dashboard, "~> 0.6"},
+      {:phoenix_live_dashboard, "~> 0.7.2"},
       {:esbuild, "~> 0.3", runtime: Mix.env() == :dev},
+      {:tailwind, "~> 0.1.8", runtime: Mix.env() == :dev},
       {:swoosh, "~> 1.3"},
+      {:finch, "~> 0.13"},
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
-      {:gettext, "~> 0.18"},
+      {:gettext, "~> 0.20"},
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
-      {:nostrum, "~> 0.4"},
-      {:nosedrum, "~> 0.4"},
+
+      {:nosedrum, github: "jchristgit/nosedrum"},
+      {:nostrum, github: "Kraigie/nostrum", override: true},
+
       {:libgraph, github: "tinfoil/libgraph"},
       {:myxql, ">= 0.0.0"},
       {:ex_esi, git: "git@github.com:lukasni/ex-esi.git", tag: "v0.2.0"},
-      {:number, "~> 1.0"},
       {:cowlib, "~> 2.11.0", override: true},
-      {:finch, "~> 0.11.0"},
-      {:tailwind, "~> 0.1", runtime: Mix.env() == :dev}
+      {:number, "~> 1.0"}
     ]
   end
 
