@@ -2,6 +2,7 @@ defmodule Phylax.Discord.Consumer.Ready do
   alias Nosedrum.Storage.ETS, as: CommandStorage
   alias Nostrum.Api
   alias Phylax.Discord.Commands
+  alias Phylax.Discord.Util
 
   @commands %{
     ["help"] => Commands.Help,
@@ -24,11 +25,9 @@ defmodule Phylax.Discord.Consumer.Ready do
     ["killboard", "unsubscribe"] => Commands.Killbot.Unsubscribe
   }
 
-  @bot_prefix Application.fetch_env!(:nosedrum, :prefix)
-
   def handle(_data) do
     :ok = load_commands()
-    :ok = Api.update_status(:online, "you | #{@bot_prefix}help", 2)
+    :ok = Api.update_status(:online, "you | #{Util.prefix()}help", 2)
   end
 
   defp load_commands() do

@@ -5,10 +5,9 @@ defmodule Phylax.Discord.Commands.Pathfinder.Config do
 
   @behaviour Nosedrum.Command
 
-  @prefix Application.fetch_env!(:nosedrum, :prefix)
-
   alias Nostrum.Api
   alias Nosedrum.Predicates
+  alias Phylax.Discord.Util
 
   @impl true
   def usage,
@@ -38,19 +37,8 @@ defmodule Phylax.Discord.Commands.Pathfinder.Config do
     Api.create_message(msg.channel_id, response)
   end
 
-  def command(msg, arg) do
-    IO.inspect(arg)
-
-    response = """
-    ℹ️ usage:
-    ```ini
-    #{
-      usage()
-      |> Stream.map(&"#{@prefix}#{&1}")
-      |> Enum.join("\n")
-    }
-    ```
-    """
+  def command(msg, _opts) do
+    response = Util.usage(__MODULE__)
 
     Api.create_message(msg.channel_id, response)
   end
