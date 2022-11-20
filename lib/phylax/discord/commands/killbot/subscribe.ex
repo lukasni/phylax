@@ -88,7 +88,7 @@ defmodule Phylax.Discord.Commands.Killbot.Subscribe do
   defp reduce_search_result({task_res, {search_res, {type, name}}}, acc, channel_id) do
     with :ok <- task_res,
          {:ok, id} <- search_res,
-         {:ok, _} <-
+         :ok <-
            Killbot.subscribe(
              entity_id: id,
              channel_id: channel_id,
