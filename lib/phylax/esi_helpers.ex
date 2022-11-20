@@ -124,7 +124,7 @@ defmodule Phylax.EsiHelpers do
       {:error, {:http_error, 400, _}, _} ->
         {:error, :too_short}
 
-      {:error, error} ->
+      {:error, error, _} ->
         {:error, error}
     end
   end

@@ -8,10 +8,10 @@
 import Config
 
 user_agent =
-    "Phylax/#{Phylax.MixProject.project()[:version] |> to_string()}" <>
-      " (#{config_env() |> to_string() |> String.upcase()} #{to_string(node())})" <>
-      " Elixir [#{System.version()}]" <>
-      " Erlang/OTP #{:erlang.system_info(:otp_release)} [erts-#{:erlang.system_info(:version)}]" <>
+  "Phylax/#{Phylax.MixProject.project()[:version] |> to_string()}" <>
+    " (#{config_env() |> to_string() |> String.upcase()} #{to_string(node())})" <>
+    " Elixir [#{System.version()}]" <>
+    " Erlang/OTP #{:erlang.system_info(:otp_release)} [erts-#{:erlang.system_info(:version)}]" <>
     " catherinesolenne/tweetfleet"
 
 config :phylax,
@@ -23,6 +23,13 @@ config :ex_esi,
   finch_opts: [name: FinchClient],
   cache: ExEsi.Cache.ETSStore,
   debug_requests: false
+
+config :phylax, Phylax.Zkillboard.RedisqClient,
+  user_agent: user_agent,
+  base_url: "https://redisq.zkillboard.com/listen.php",
+  queueID: "NVACA-Phylax-#{config_env()}",
+  # 10 second wait time for empty package
+  ttw: 10
 
 config :nosedrum,
   prefix: System.get_env("BOT_PREFIX") || "."
