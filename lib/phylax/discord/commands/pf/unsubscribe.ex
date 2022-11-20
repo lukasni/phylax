@@ -31,12 +31,12 @@ defmodule Phylax.Discord.Commands.Pathfinder.Unsubscribe do
     response =
       case PF.delete_watched_chain(msg.channel_id, map_name, root_system) do
         {:ok, _} ->
-          "Stopped tracking map #{Helpers.escape_server_mentions(map_name)} with root system #{
-            Helpers.escape_server_mentions(root_system)
-          } in this channel."
+          "Stopped tracking map #{Helpers.escape_server_mentions(map_name)}" <>
+            " with root system #{Helpers.escape_server_mentions(root_system)} in this channel."
 
         {:error, :system_not_found} ->
-          "No system named #{Helpers.escape_server_mentions(root_system)} found. Make sure to use the EVE name, not the pathfinder alias."
+          "No system named #{Helpers.escape_server_mentions(root_system)}" <>
+            " found. Make sure to use the EVE name, not the pathfinder alias."
 
         {:error, :map_not_found} ->
           "No map named #{Helpers.escape_server_mentions(map_name)} found."

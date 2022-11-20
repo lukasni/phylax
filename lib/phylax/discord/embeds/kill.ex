@@ -46,11 +46,6 @@ defmodule Phylax.Discord.Embeds.Kill do
     |> Enum.find(nil, & &1["final_blow"])
   end
 
-  defp get_most_damage(kill) do
-    kill.killmail["attackers"]
-    |> Enum.max_by(& &1["damage_done"])
-  end
-
   defp get_most_damage(kill, amount) do
     kill.killmail["attackers"]
     |> Enum.sort_by(& &1["damage_done"], :desc)
@@ -137,16 +132,15 @@ defmodule Phylax.Discord.Embeds.Kill do
   end
 
   defp format_location(%{jspace: nil} = location) do
-    "#{print_system(location.system)} (#{
-      Number.Delimit.number_to_delimited(location.system["security_status"],
-        separator: ".",
-        precision: 2
-      )
-    }) / #{print_region(location.region)}"
+    "#{print_system(location.system)} (#{format_security_status(location.system)}) / #{print_region(location.region)}"
   end
 
   defp format_location(location) do
     "#{print_system(location.system)} (#{location.jspace}) / #{print_region(location.region)}"
+  end
+
+  defp format_security_status(system) do
+    Number.Delimit.number_to_delimited(system["security_status"], separator: ".", precision: 2)
   end
 
   defp print_system(system) do

@@ -62,13 +62,15 @@ defmodule Phylax.Discord.Commands.Help do
               subcommand_map
               |> format_subcommand_list()
 
-            [embed: %Embed{
-              title: "`#{command_name}` - subcommands",
-              description: subcommand_string,
-              footer: %Embed.Footer{
-                text: "View `help #{command_name} <subcommand>` for details"
+            [
+              embed: %Embed{
+                title: "`#{command_name}` - subcommands",
+                description: subcommand_string,
+                footer: %Embed.Footer{
+                  text: "View `help #{command_name} <subcommand>` for details"
+                }
               }
-            }]
+            ]
           end
 
         {:ok, _msg} = Api.create_message(msg.channel_id, embed)

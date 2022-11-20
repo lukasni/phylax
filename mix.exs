@@ -51,10 +51,10 @@ defmodule Phylax.MixProject do
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
-
+      # Discord requirements
       {:nosedrum, github: "jchristgit/nosedrum"},
       {:nostrum, github: "Kraigie/nostrum", override: true},
-
+      # Application requirements
       {:libgraph, github: "tinfoil/libgraph"},
       {:myxql, ">= 0.0.0"},
       {:ex_esi, git: "git@github.com:lukasni/ex-esi.git", tag: "v0.2.0"},
@@ -62,7 +62,6 @@ defmodule Phylax.MixProject do
       {:number, "~> 1.0"}
     ]
   end
-
 
   # Aliases are shortcuts or tasks specific to the current project.
   # For example, to install project dependencies and perform other setup tasks, run:

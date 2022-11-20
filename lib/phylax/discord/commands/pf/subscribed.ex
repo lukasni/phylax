@@ -44,11 +44,7 @@ defmodule Phylax.Discord.Commands.Pathfinder.Subscribed do
     """
     Currently tracking:
 
-    #{
-      Enum.map(chains, &Task.async(fn -> format_chain(&1) end))
-      |> Enum.map(&Task.await/1)
-      |> Enum.join("")
-    }
+    #{Enum.map(chains, &Task.async(fn -> format_chain(&1) end)) |> Enum.map(&Task.await/1) |> Enum.join("")}
     """
   end
 
@@ -58,11 +54,9 @@ defmodule Phylax.Discord.Commands.Pathfinder.Subscribed do
 
     """
     Map *#{map_name}* with root system *#{system["name"]}*
-        #{
-      if chain.excluded_entities != [] do
-        "Exclude: " <> (chain.excluded_entities |> Enum.map(& &1.entity_name) |> Enum.join(", "))
-      end
-    }
+        #{if chain.excluded_entities != [] do
+      "Exclude: " <> (chain.excluded_entities |> Enum.map(& &1.entity_name) |> Enum.join(", "))
+    end}
     """
   end
 end

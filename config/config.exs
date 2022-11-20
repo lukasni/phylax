@@ -7,14 +7,18 @@
 # General application configuration
 import Config
 
+user_agent =
+    "Phylax/#{Phylax.MixProject.project()[:version] |> to_string()}" <>
+      " (#{config_env() |> to_string() |> String.upcase()} #{to_string(node())})" <>
+      " Elixir [#{System.version()}]" <>
+      " Erlang/OTP #{:erlang.system_info(:otp_release)} [erts-#{:erlang.system_info(:version)}]" <>
+    " catherinesolenne/tweetfleet"
+
 config :phylax,
   ecto_repos: [Phylax.Repo]
 
 config :ex_esi,
-  user_agent:
-    "Phylax/0.4.4 (#{Mix.env() |> to_string() |> String.upcase()} #{to_string(node())}) Erlang/OTP #{
-      :erlang.system_info(:otp_release)
-    } [erts-#{:erlang.system_info(:version)}] catherinesolenne/tweetfleet",
+  user_agent: user_agent,
   http_client: ExEsi.Request.Finch,
   finch_opts: [name: FinchClient],
   cache: ExEsi.Cache.ETSStore,

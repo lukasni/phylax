@@ -59,12 +59,6 @@ config :phylax, PhylaxWeb.Endpoint,
   secret_key_base: secret_key_base,
   live_view: [signing_salt: lv_signing_salt]
 
-config :ex_esi,
-  user_agent:
-    "Phylax/0.4.4 (PROD #{to_string(node())}) Erlang/OTP #{:erlang.system_info(:otp_release)} [erts-#{
-      :erlang.system_info(:version)
-    }] catherinesolenne/tweetfleet"
-
 # ## Using releases (Elixir v1.9+)
 #
 # If you are doing OTP releases, you need to instruct Phoenix
