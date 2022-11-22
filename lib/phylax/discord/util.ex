@@ -3,19 +3,26 @@ defmodule Phylax.Discord.Util do
   Various discord helpers
   """
 
-  @prefix Application.fetch_env!(:nosedrum, :prefix)
+  def prefix do
+    Application.fetch_env!(:nosedrum, :prefix)
+  end
 
   def usage(module) do
-    """
-    ℹ️ usage:
-    ```ini
-    #{
-      module.usage()
-      |> Stream.map(&"#{@prefix}#{&1}")
-      |> Enum.join("\n")
-    }
-    ```
-    """
+    usage("usage", module)
+  end
+
+  def usage(name, command_module) do
+    [
+      embed: %Nostrum.Struct.Embed{
+        title: "❔ `#{name}`",
+        description: """
+        ```ini
+        #{command_module.usage() |> Stream.map(&"#{prefix()}#{&1}") |> Enum.join("\n")}
+        ```
+        #{command_module.description()}
+        """
+      }
+    ]
   end
 
   def has_required_args?(options, args) do

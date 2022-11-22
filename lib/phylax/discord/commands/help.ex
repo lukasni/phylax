@@ -5,8 +5,6 @@ defmodule Phylax.Discord.Commands.Help do
 
   @behaviour Nosedrum.Command
 
-  @prefix Application.fetch_env!(:nosedrum, :prefix)
-
   alias Nosedrum.Storage.ETS, as: CommandStorage
   alias Nosedrum.Helpers
   alias Nostrum.Api
@@ -34,7 +32,7 @@ defmodule Phylax.Discord.Commands.Help do
       description:
         CommandStorage.all_commands()
         |> Map.keys()
-        |> Stream.map(&"`#{@prefix}#{&1}`")
+        |> Stream.map(&"`#{Util.prefix()}#{&1}`")
         |> (fn commands ->
               """
               #{Enum.join(commands, ", ")}
@@ -52,36 +50,38 @@ defmodule Phylax.Discord.Commands.Help do
         {:ok, _msg} = Api.create_message(msg.channel_id, response)
 
       command_module when not is_map(command_module) ->
-        embed = format_command_detail(command_name, command_module)
-        {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
+        embed = Util.usage(command_name, command_module)
+        {:ok, _msg} = Api.create_message(msg.channel_id, embed)
 
       subcommand_map ->
         embed =
           if Map.has_key?(subcommand_map, :default) do
-            format_command_detail(command_name, subcommand_map.default)
+            Util.usage(command_name, subcommand_map.default)
           else
             subcommand_string =
               subcommand_map
               |> format_subcommand_list()
 
-            %Embed{
-              title: "`#{command_name}` - subcommands",
-              description: subcommand_string,
-              footer: %Embed.Footer{
-                text: "View `help #{command_name} <subcommand>` for details"
+            [
+              embed: %Embed{
+                title: "`#{command_name}` - subcommands",
+                description: subcommand_string,
+                footer: %Embed.Footer{
+                  text: "View `help #{command_name} <subcommand>` for details"
+                }
               }
-            }
+            ]
           end
 
-        {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
+        {:ok, _msg} = Api.create_message(msg.channel_id, embed)
     end
   end
 
   def command(msg, [command_group, subcommand_name]) do
     with command_map when is_map(command_map) <- CommandStorage.lookup_command(command_group),
          {:ok, command_module} <- Map.fetch(command_map, subcommand_name) do
-      embed = format_command_detail("#{command_group} #{subcommand_name}", command_module)
-      {:ok, _msg} = Api.create_message(msg.channel_id, embed: embed)
+      embed = Util.usage("#{command_group} #{subcommand_name}", command_module)
+      {:ok, _msg} = Api.create_message(msg.channel_id, embed)
     else
       :error ->
         subcommand_string =
@@ -112,22 +112,6 @@ defmodule Phylax.Discord.Commands.Help do
     response = Util.usage(__MODULE__)
 
     Api.create_message(msg.channel_id, response)
-  end
-
-  defp format_command_detail(name, command_module) do
-    %Embed{
-      title: "❔ `#{name}`",
-      description: """
-      ```ini
-      #{
-        command_module.usage()
-        |> Stream.map(&"#{@prefix}#{&1}")
-        |> Enum.join("\n")
-      }
-      ```
-      #{command_module.description()}
-      """
-    }
   end
 
   defp format_subcommand_list(subcommands) do

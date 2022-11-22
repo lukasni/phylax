@@ -86,37 +86,40 @@ defmodule Phylax.EsiHelpers do
   end
 
   def search({:corporation, term}) do
-    term
-    |> API.Corporation.search()
+    [term]
+    |> API.Universe.ids()
+    |> API.put_after_parse(&parse_ids_result(&1, "corporations", term))
     |> do_search()
   end
 
   def search({:alliance, term}) do
-    term
-    |> API.Alliance.search()
+    [term]
+    |> API.Universe.ids()
+    |> API.put_after_parse(&parse_ids_result(&1, "alliances", term))
     |> do_search()
   end
 
   def search({:character, term}) do
-    term
-    |> API.Character.search()
+    [term]
+    |> API.Universe.ids()
+    |> API.put_after_parse(&parse_ids_result(&1, "characters", term))
     |> do_search()
   end
 
   def search({:system, term}) do
-    term
-    |> API.Search.public([:solar_system], true)
-    |> API.put_after_parse(&Map.get(&1, "solar_system"))
+    [term]
+    |> API.Universe.ids()
+    |> API.put_after_parse(&parse_ids_result(&1, "systems", term))
     |> do_search()
   end
 
   defp do_search(op) do
     case ExEsi.request(op) do
-      {:ok, [id], _} ->
-        {:ok, id}
-
       {:ok, nil, _} ->
         {:error, :not_found}
+
+      {:ok, id, _} when is_integer(id) ->
+        {:ok, id}
 
       {:ok, _list, _} ->
         {:error, :ambiguous}
@@ -124,9 +127,19 @@ defmodule Phylax.EsiHelpers do
       {:error, {:http_error, 400, _}, _} ->
         {:error, :too_short}
 
-      {:error, error} ->
+      {:error, error, _} ->
         {:error, error}
     end
+  end
+
+  defp parse_ids_result(map, _, _) when map_size(map) == 0, do: nil
+
+  defp parse_ids_result(result, type, term) do
+    result
+    |> IO.inspect(label: "Search Result")
+    |> Map.get(type, [])
+    |> Enum.find(%{}, &(&1["name"] == term))
+    |> Map.get("id")
   end
 
   defp remap_names({:ok, names_result, _meta}) do

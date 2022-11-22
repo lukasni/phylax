@@ -2,14 +2,12 @@ defmodule Phylax.Pathfinder.WatchedChain do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Phylax.Pathfinder.ExcludedEntity
-
   schema "pathfinder_watched_chains" do
     field :channel_id, :integer
     field :map_id, :integer
     field :root_system_id, :integer
 
-    has_many :excluded_entities, ExcludedEntity
+    has_many :excluded_entities, Phylax.Pathfinder.ExcludedEntity
 
     timestamps()
   end

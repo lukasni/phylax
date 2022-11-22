@@ -1,5 +1,7 @@
 defmodule Phylax.Killbot.WorkerSupervisor do
-  @moduledoc false
+  @moduledoc """
+  Dynamic Supervisor process for the killbot workers, will restart any crashed worker processes
+  """
 
   use DynamicSupervisor
   alias Phylax.Killbot.Worker

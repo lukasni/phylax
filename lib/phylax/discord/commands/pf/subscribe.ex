@@ -67,15 +67,15 @@ defmodule Phylax.Discord.Commands.Pathfinder.Subscribe do
     response =
       with {:args, true} <- {:args, Util.has_required_args?(options, [:map, :root])},
            {:ok, _} <- PF.add_watched_chain(msg.channel_id, options) do
-        "Now tracking map #{Helpers.escape_server_mentions(options[:map])} with root system #{
-          Helpers.escape_server_mentions(options[:root])
-        } in this channel."
+        "Now tracking map #{Helpers.escape_server_mentions(options[:map])}" <>
+          " with root system #{Helpers.escape_server_mentions(options[:root])} in this channel."
       else
         {:args, false} ->
           "Missing required arguments. Check `help pf subscribe`"
 
         {:error, :system_not_found} ->
-          "No system named #{Helpers.escape_server_mentions(options[:root])} found. Make sure to use the EVE name, not the pathfinder alias."
+          "No system named #{Helpers.escape_server_mentions(options[:root])}" <>
+            " found. Make sure to use the EVE name, not the pathfinder alias."
 
         {:error, :map_not_found} ->
           "No map named #{Helpers.escape_server_mentions(options[:map])} found."

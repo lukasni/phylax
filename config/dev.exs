@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 # Configure your database
 config :phylax, Phylax.Repo,
@@ -9,6 +9,10 @@ config :phylax, Phylax.Repo,
   database: "tutor_dev",
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
+
+# Configure ESI logging
+config :ex_esi,
+  debug_requests: true
 
 ## For development, we disable any cache and enable
 # debugging and code reloading.
@@ -65,6 +69,9 @@ config :phylax, PhylaxWeb.Endpoint,
     ]
   ]
 
+# Enable dev routes for dashboard and mailbox
+config :phylax, dev_routes: true
+
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
 
@@ -74,5 +81,8 @@ config :phoenix, :stacktrace_depth, 20
 
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
+
+# Disable swoosh api client as it is only required for production adapters.
+config :swoosh, :api_client, false
 
 import_config "dev.secret.exs"

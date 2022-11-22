@@ -5,20 +5,31 @@
 # is restricted to this project.
 
 # General application configuration
-use Mix.Config
+import Config
+
+user_agent =
+  "Phylax/#{Phylax.MixProject.project()[:version] |> to_string()}" <>
+    " (#{config_env() |> to_string() |> String.upcase()} #{to_string(node())})" <>
+    " Elixir [#{System.version()}]" <>
+    " Erlang/OTP #{:erlang.system_info(:otp_release)} [erts-#{:erlang.system_info(:version)}]" <>
+    " catherinesolenne/tweetfleet"
 
 config :phylax,
   ecto_repos: [Phylax.Repo]
 
 config :ex_esi,
-  user_agent:
-    "Phylax/0.4.4 (#{Mix.env() |> to_string() |> String.upcase()} #{to_string(node())}) Erlang/OTP #{
-      :erlang.system_info(:otp_release)
-    } [erts-#{:erlang.system_info(:version)}] catherinesolenne/tweetfleet",
+  user_agent: user_agent,
   http_client: ExEsi.Request.Finch,
   finch_opts: [name: FinchClient],
   cache: ExEsi.Cache.ETSStore,
   debug_requests: false
+
+config :phylax, Phylax.Zkillboard.RedisqClient,
+  user_agent: user_agent,
+  base_url: "https://redisq.zkillboard.com/listen.php",
+  queueID: "NVACA-Phylax-#{config_env()}",
+  # 10 second wait time for empty package
+  ttw: 10
 
 config :nosedrum,
   prefix: System.get_env("BOT_PREFIX") || "."
@@ -36,7 +47,8 @@ config :nostrum,
     :guild_message_reactions,
     :guild_messages,
     :guild_presences,
-    :guilds
+    :guilds,
+    :message_content
   ]
 
 config :phylax, Phylax.Cache.ChainCache, expire_after: :timer.minutes(1)
@@ -44,8 +56,10 @@ config :phylax, Phylax.Cache.ChainCache, expire_after: :timer.minutes(1)
 # Configures the endpoint
 config :phylax, PhylaxWeb.Endpoint,
   url: [host: "localhost"],
-  secret_key_base: "zeg+i64Il7GJeHePHi3+M61cXCzjX4hPCBIXuY2HWa2VTzwPsIF2oMlTJsHKqSVg",
-  render_errors: [view: PhylaxWeb.ErrorView, accepts: ~w(html json), layout: false],
+  render_errors: [
+    formats: [html: PhylaxWeb.ErrorHTML, json: PhylaxWeb.ErrorJSON],
+    layout: false
+  ],
   pubsub_server: Phylax.PubSub,
   live_view: [signing_salt: "OIuI3HzZ"]
 
@@ -63,12 +77,24 @@ config :swoosh, :api_client, false
 
 # Configure esbuild (the version is required)
 config :esbuild,
-  version: "0.14.0",
+  version: "0.14.41",
   default: [
     args:
       ~w(js/app.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
+  ]
+
+# Configure tailwind (the version is required)
+config :tailwind,
+  version: "3.2.4",
+  default: [
+    args: ~w(
+      --config=tailwind.config.js
+      --input=css/app.css
+      --output=../priv/static/assets/app.css
+    ),
+    cd: Path.expand("../assets", __DIR__)
   ]
 
 # Configures Elixir's Logger
@@ -79,17 +105,6 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
-config :tailwind,
-  version: "3.0.15",
-  default: [
-    args: ~w(
-      --config=tailwind.config.js
-      --input=css/app.css
-      --output=../priv/static/assets/app.css
-    ),
-    cd: Path.expand("../assets", __DIR__)
-  ]
-
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
-import_config "#{Mix.env()}.exs"
+import_config "#{config_env()}.exs"
